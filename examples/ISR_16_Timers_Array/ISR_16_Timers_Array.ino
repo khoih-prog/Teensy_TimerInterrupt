@@ -135,6 +135,17 @@ uint32_t TimerInterval[NUMBER_ISR_TIMERS] =
 
 typedef void (*irqCallback)  (void);
 
+#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
+void printStatus(uint16_t index, unsigned long deltaMillis, unsigned long currentMillis)
+{
+  Serial.print(TimerInterval[index]/1000);
+  Serial.print("s: Delta ms = ");
+  Serial.print(deltaMillis);
+  Serial.print(", ms = ");
+  Serial.println(currentMillis);
+}
+#endif
+
 // In Teensy, avoid doing something fancy in ISR, for example complex Serial.print with String() argument
 // The pure simple Serial.prints here are just for demonstration and testing. Must be eliminate in working environment
 // Or you can get this run-time error / crash
@@ -146,11 +157,7 @@ void doingSomething0()
   unsigned long deltaMillis   = currentMillis - previousMillis;
 
 #if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-  Serial.print(TimerInterval[0]/1000);
-  Serial.print("s: Delta ms = ");
-  Serial.print(deltaMillis);
-  Serial.print(", ms = ");
-  Serial.println(currentMillis);
+  printStatus(0, deltaMillis, currentMillis);
 #endif
 
   previousMillis = currentMillis;
@@ -164,11 +171,7 @@ void doingSomething1()
   unsigned long deltaMillis   = currentMillis - previousMillis;
 
 #if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-  Serial.print(TimerInterval[1]/1000);
-  Serial.print("s: Delta ms = ");
-  Serial.print(deltaMillis);
-  Serial.print(", ms = ");
-  Serial.println(currentMillis);
+  printStatus(1, deltaMillis, currentMillis);
 #endif
 
   previousMillis = currentMillis;
@@ -182,11 +185,7 @@ void doingSomething2()
   unsigned long deltaMillis   = currentMillis - previousMillis;
 
 #if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-  Serial.print(TimerInterval[2]/1000);
-  Serial.print("s: Delta ms = ");
-  Serial.print(deltaMillis);
-  Serial.print(", ms = ");
-  Serial.println(currentMillis);
+  printStatus(2, deltaMillis, currentMillis);
 #endif
 
   previousMillis = currentMillis;
@@ -200,11 +199,7 @@ void doingSomething3()
   unsigned long deltaMillis   = currentMillis - previousMillis;
 
 #if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-  Serial.print(TimerInterval[3]/1000);
-  Serial.print("s: Delta ms = ");
-  Serial.print(deltaMillis);
-  Serial.print(", ms = ");
-  Serial.println(currentMillis);
+  printStatus(3, deltaMillis, currentMillis);
 #endif
 
   previousMillis = currentMillis;
@@ -218,11 +213,7 @@ void doingSomething4()
   unsigned long deltaMillis   = currentMillis - previousMillis;
 
 #if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-  Serial.print(TimerInterval[4]/1000);
-  Serial.print("s: Delta ms = ");
-  Serial.print(deltaMillis);
-  Serial.print(", ms = ");
-  Serial.println(currentMillis);
+  printStatus(4, deltaMillis, currentMillis);
 #endif
 
   previousMillis = currentMillis;
@@ -236,11 +227,7 @@ void doingSomething5()
   unsigned long deltaMillis   = currentMillis - previousMillis;
 
 #if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-  Serial.print(TimerInterval[5]/1000);
-  Serial.print("s: Delta ms = ");
-  Serial.print(deltaMillis);
-  Serial.print(", ms = ");
-  Serial.println(currentMillis);
+  printStatus(5, deltaMillis, currentMillis);
 #endif
 
   previousMillis = currentMillis;
@@ -254,11 +241,7 @@ void doingSomething6()
   unsigned long deltaMillis   = currentMillis - previousMillis;
 
 #if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-  Serial.print(TimerInterval[6]/1000);
-  Serial.print("s: Delta ms = ");
-  Serial.print(deltaMillis);
-  Serial.print(", ms = ");
-  Serial.println(currentMillis);
+  printStatus(6, deltaMillis, currentMillis);
 #endif
 
   previousMillis = currentMillis;
@@ -272,11 +255,7 @@ void doingSomething7()
   unsigned long deltaMillis   = currentMillis - previousMillis;
 
 #if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-  Serial.print(TimerInterval[7]/1000);
-  Serial.print("s: Delta ms = ");
-  Serial.print(deltaMillis);
-  Serial.print(", ms = ");
-  Serial.println(currentMillis);
+  printStatus(7, deltaMillis, currentMillis);
 #endif
 
   previousMillis = currentMillis;
@@ -290,11 +269,7 @@ void doingSomething8()
   unsigned long deltaMillis   = currentMillis - previousMillis;
 
 #if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-  Serial.print(TimerInterval[8]/1000);
-  Serial.print("s: Delta ms = ");
-  Serial.print(deltaMillis);
-  Serial.print(", ms = ");
-  Serial.println(currentMillis);
+  printStatus(8, deltaMillis, currentMillis);
 #endif
 
   previousMillis = currentMillis;
@@ -308,11 +283,7 @@ void doingSomething9()
   unsigned long deltaMillis   = currentMillis - previousMillis;
 
 #if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-  Serial.print(TimerInterval[9]/1000);
-  Serial.print("s: Delta ms = ");
-  Serial.print(deltaMillis);
-  Serial.print(", ms = ");
-  Serial.println(currentMillis);
+  printStatus(9, deltaMillis, currentMillis);
 #endif
 
   previousMillis = currentMillis;
@@ -326,11 +297,7 @@ void doingSomething10()
   unsigned long deltaMillis   = currentMillis - previousMillis;
 
 #if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-  Serial.print(TimerInterval[10]/1000);
-  Serial.print("s: Delta ms = ");
-  Serial.print(deltaMillis);
-  Serial.print(", ms = ");
-  Serial.println(currentMillis);
+  printStatus(10, deltaMillis, currentMillis);
 #endif
 
   previousMillis = currentMillis;
@@ -347,11 +314,7 @@ void doingSomething11()
   unsigned long deltaMillis   = currentMillis - previousMillis;
 
 #if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-  Serial.print(TimerInterval[11]/1000);
-  Serial.print("s: Delta ms = ");
-  Serial.print(deltaMillis);
-  Serial.print(", ms = ");
-  Serial.println(currentMillis);
+  printStatus(11, deltaMillis, currentMillis);
 #endif
 
   previousMillis = currentMillis;
@@ -368,11 +331,7 @@ void doingSomething12()
   unsigned long deltaMillis   = currentMillis - previousMillis;
 
 #if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-  Serial.print(TimerInterval[12]/1000);
-  Serial.print("s: Delta ms = ");
-  Serial.print(deltaMillis);
-  Serial.print(", ms = ");
-  Serial.println(currentMillis);
+  printStatus(12, deltaMillis, currentMillis);
 #endif
 
   previousMillis = currentMillis;
@@ -386,11 +345,7 @@ void doingSomething13()
   unsigned long deltaMillis   = currentMillis - previousMillis;
 
 #if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-  Serial.print(TimerInterval[13]/1000);
-  Serial.print("s: Delta ms = ");
-  Serial.print(deltaMillis);
-  Serial.print(", ms = ");
-  Serial.println(currentMillis);
+  printStatus(13, deltaMillis, currentMillis);
 #endif
 
   previousMillis = currentMillis;
@@ -404,11 +359,7 @@ void doingSomething14()
   unsigned long deltaMillis   = currentMillis - previousMillis;
 
 #if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-  Serial.print(TimerInterval[14]/1000);
-  Serial.print("s: Delta ms = ");
-  Serial.print(deltaMillis);
-  Serial.print(", ms = ");
-  Serial.println(currentMillis);
+  printStatus(14, deltaMillis, currentMillis);
 #endif
 
   previousMillis = currentMillis;
@@ -422,11 +373,7 @@ void doingSomething15()
   unsigned long deltaMillis   = currentMillis - previousMillis;
 
 #if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-  Serial.print(TimerInterval[15]/1000);
-  Serial.print("s: Delta ms = ");
-  Serial.print(deltaMillis);
-  Serial.print(", ms = ");
-  Serial.println(currentMillis);
+  printStatus(15, deltaMillis, currentMillis);
 #endif
 
   previousMillis = currentMillis;
