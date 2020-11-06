@@ -48,6 +48,10 @@ The catch is **your function is now part of an ISR (Interrupt Service Routine), 
 ---
 ---
 
+### Releases v1.0.1
+
+1. Add complicated example [ISR_16_Timers_Array](examples/ISR_16_Timers_Array) utilizing and demonstrating the full usage of 16 independent ISR Timers.
+
 ### Releases v1.0.0
 
 1. Permit up to 16 super-long-time, super-accurate ISR-based timers to avoid being blocked
@@ -277,18 +281,19 @@ void setup()
 ### Examples: 
 
  1. [Argument_None](examples/Argument_None)
- 2. [ISR_RPM_Measure](examples/ISR_RPM_Measure)
- 3. [ISR_Timer_Complex](examples/ISR_Timer_Complex)
- 4. [RPM_Measure](examples/RPM_Measure)
- 5. [SwitchDebounce](examples/SwitchDebounce)
- 6. [TimerInterruptTest](examples/TimerInterruptTest)
- 7. [TimerInterruptLEDDemo](examples/TimerInterruptLEDDemo)
+ 2. [ISR_16_Timers_Array](examples/ISR_16_Timers_Array)
+ 3. [ISR_RPM_Measure](examples/ISR_RPM_Measure)
+ 4. [ISR_Timer_Complex](examples/ISR_Timer_Complex)
+ 5. [RPM_Measure](examples/RPM_Measure)
+ 6. [SwitchDebounce](examples/SwitchDebounce)
+ 7. [TimerInterruptTest](examples/TimerInterruptTest)
+ 8. [TimerInterruptLEDDemo](examples/TimerInterruptLEDDemo)
 
 
 ---
 ---
 
-### Example [ISR_Timer_Complex](examples/ISR_Timer_Complex)
+### Example [ISR_16_Timers_Array](examples/ISR_16_Timers_Array)
 
 ```
 #if !( defined(CORE_TEENSY) || defined(TEENSYDUINO) )
@@ -318,7 +323,7 @@ void setup()
 
 #define HW_TIMER_INTERVAL_MS      1L
 
-volatile uint32_t lastMillis = 0;
+volatile uint32_t startMillis = 0;
 
 // You can select Teensy Hardware Timer  from TEENSY_TIMER_1 or TEENSY_TIMER_3
 
@@ -334,11 +339,6 @@ Teensy_ISR_Timer ISR_Timer;
 #endif
 
 #define LED_TOGGLE_INTERVAL_MS        2000L
-
-#define TIMER_INTERVAL_2S             2000L
-#define TIMER_INTERVAL_5S             5000L
-#define TIMER_INTERVAL_11S            11000L
-#define TIMER_INTERVAL_101S           101000L
 
 void TimerHandler(void)
 {
@@ -365,81 +365,324 @@ void TimerHandler(void)
   }
 }
 
+#define NUMBER_ISR_TIMERS         16
+
+// You can assign any interval for any timer here, in milliseconds
+uint32_t TimerInterval[NUMBER_ISR_TIMERS] =
+{
+  1000L,  2000L,  3000L,  4000L,  5000L,  6000L,  7000L,  8000L,
+  9000L, 10000L, 11000L, 12000L, 13000L, 14000L, 15000L, 16000L
+};
+
+typedef void (*irqCallback)  (void);
+
 // In Teensy, avoid doing something fancy in ISR, for example complex Serial.print with String() argument
 // The pure simple Serial.prints here are just for demonstration and testing. Must be eliminate in working environment
 // Or you can get this run-time error / crash
-void doingSomething2s()
+void doingSomething0()
 {
-  static unsigned long previousMillis = lastMillis;
-  unsigned long deltaMillis = millis() - previousMillis;
+  static unsigned long previousMillis = startMillis;
+  
+  unsigned long currentMillis = millis();
+  unsigned long deltaMillis   = currentMillis - previousMillis;
 
 #if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-  if (previousMillis > TIMER_INTERVAL_2S)
-  {
-    Serial.print("2s: Delta ms = ");
-    Serial.println(deltaMillis);
-  }
+  Serial.print(TimerInterval[0]/1000);
+  Serial.print("s: Delta ms = ");
+  Serial.print(deltaMillis);
+  Serial.print(", ms = ");
+  Serial.println(currentMillis);
 #endif
 
-  previousMillis = millis();
+  previousMillis = currentMillis;
+}
+
+void doingSomething1()
+{
+  static unsigned long previousMillis = startMillis;
+  
+  unsigned long currentMillis = millis();
+  unsigned long deltaMillis   = currentMillis - previousMillis;
+
+#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
+  Serial.print(TimerInterval[1]/1000);
+  Serial.print("s: Delta ms = ");
+  Serial.print(deltaMillis);
+  Serial.print(", ms = ");
+  Serial.println(currentMillis);
+#endif
+
+  previousMillis = currentMillis;
+}
+
+void doingSomething2()
+{
+  static unsigned long previousMillis = startMillis;
+  
+  unsigned long currentMillis = millis();
+  unsigned long deltaMillis   = currentMillis - previousMillis;
+
+#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
+  Serial.print(TimerInterval[2]/1000);
+  Serial.print("s: Delta ms = ");
+  Serial.print(deltaMillis);
+  Serial.print(", ms = ");
+  Serial.println(currentMillis);
+#endif
+
+  previousMillis = currentMillis;
+}
+
+void doingSomething3()
+{
+  static unsigned long previousMillis = startMillis;
+  
+  unsigned long currentMillis = millis();
+  unsigned long deltaMillis   = currentMillis - previousMillis;
+
+#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
+  Serial.print(TimerInterval[3]/1000);
+  Serial.print("s: Delta ms = ");
+  Serial.print(deltaMillis);
+  Serial.print(", ms = ");
+  Serial.println(currentMillis);
+#endif
+
+  previousMillis = currentMillis;
+}
+
+void doingSomething4()
+{
+  static unsigned long previousMillis = startMillis;
+  
+  unsigned long currentMillis = millis();
+  unsigned long deltaMillis   = currentMillis - previousMillis;
+
+#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
+  Serial.print(TimerInterval[4]/1000);
+  Serial.print("s: Delta ms = ");
+  Serial.print(deltaMillis);
+  Serial.print(", ms = ");
+  Serial.println(currentMillis);
+#endif
+
+  previousMillis = currentMillis;
+}
+
+void doingSomething5()
+{
+  static unsigned long previousMillis = startMillis;
+  
+  unsigned long currentMillis = millis();
+  unsigned long deltaMillis   = currentMillis - previousMillis;
+
+#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
+  Serial.print(TimerInterval[5]/1000);
+  Serial.print("s: Delta ms = ");
+  Serial.print(deltaMillis);
+  Serial.print(", ms = ");
+  Serial.println(currentMillis);
+#endif
+
+  previousMillis = currentMillis;
+}
+
+void doingSomething6()
+{
+  static unsigned long previousMillis = startMillis;
+  
+  unsigned long currentMillis = millis();
+  unsigned long deltaMillis   = currentMillis - previousMillis;
+
+#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
+  Serial.print(TimerInterval[6]/1000);
+  Serial.print("s: Delta ms = ");
+  Serial.print(deltaMillis);
+  Serial.print(", ms = ");
+  Serial.println(currentMillis);
+#endif
+
+  previousMillis = currentMillis;
+}
+
+void doingSomething7()
+{
+  static unsigned long previousMillis = startMillis;
+  
+  unsigned long currentMillis = millis();
+  unsigned long deltaMillis   = currentMillis - previousMillis;
+
+#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
+  Serial.print(TimerInterval[7]/1000);
+  Serial.print("s: Delta ms = ");
+  Serial.print(deltaMillis);
+  Serial.print(", ms = ");
+  Serial.println(currentMillis);
+#endif
+
+  previousMillis = currentMillis;
+}
+
+void doingSomething8()
+{
+  static unsigned long previousMillis = startMillis;
+  
+  unsigned long currentMillis = millis();
+  unsigned long deltaMillis   = currentMillis - previousMillis;
+
+#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
+  Serial.print(TimerInterval[8]/1000);
+  Serial.print("s: Delta ms = ");
+  Serial.print(deltaMillis);
+  Serial.print(", ms = ");
+  Serial.println(currentMillis);
+#endif
+
+  previousMillis = currentMillis;
+}
+
+void doingSomething9()
+{
+  static unsigned long previousMillis = startMillis;
+  
+  unsigned long currentMillis = millis();
+  unsigned long deltaMillis   = currentMillis - previousMillis;
+
+#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
+  Serial.print(TimerInterval[9]/1000);
+  Serial.print("s: Delta ms = ");
+  Serial.print(deltaMillis);
+  Serial.print(", ms = ");
+  Serial.println(currentMillis);
+#endif
+
+  previousMillis = currentMillis;
+}
+
+void doingSomething10()
+{
+  static unsigned long previousMillis = startMillis;
+  
+  unsigned long currentMillis = millis();
+  unsigned long deltaMillis   = currentMillis - previousMillis;
+
+#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
+  Serial.print(TimerInterval[10]/1000);
+  Serial.print("s: Delta ms = ");
+  Serial.print(deltaMillis);
+  Serial.print(", ms = ");
+  Serial.println(currentMillis);
+#endif
+
+  previousMillis = currentMillis;
 }
 
 // In Teensy, avoid doing something fancy in ISR, for example complex Serial.print with String() argument
 // The pure simple Serial.prints here are just for demonstration and testing. Must be eliminate in working environment
 // Or you can get this run-time error / crash
-void doingSomething5s()
+void doingSomething11()
 {
-  static unsigned long previousMillis = lastMillis;
-  unsigned long deltaMillis = millis() - previousMillis;
+  static unsigned long previousMillis = startMillis;
+  
+  unsigned long currentMillis = millis();
+  unsigned long deltaMillis   = currentMillis - previousMillis;
 
 #if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-  if (previousMillis > TIMER_INTERVAL_5S)
-  {
-    Serial.print("5s: Delta ms = ");
-    Serial.println(deltaMillis);
-  }
+  Serial.print(TimerInterval[11]/1000);
+  Serial.print("s: Delta ms = ");
+  Serial.print(deltaMillis);
+  Serial.print(", ms = ");
+  Serial.println(currentMillis);
 #endif
 
-  previousMillis = millis();
+  previousMillis = currentMillis;
 }
 
 // In Teensy, avoid doing something fancy in ISR, for example complex Serial.print with String() argument
 // The pure simple Serial.prints here are just for demonstration and testing. Must be eliminate in working environment
 // Or you can get this run-time error / crash
-void doingSomething11s()
+void doingSomething12()
 {
-  static unsigned long previousMillis = lastMillis;
-  unsigned long deltaMillis = millis() - previousMillis;
+  static unsigned long previousMillis = startMillis;
+  
+  unsigned long currentMillis = millis();
+  unsigned long deltaMillis   = currentMillis - previousMillis;
 
 #if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-  if (previousMillis > TIMER_INTERVAL_11S)
-  {
-    Serial.print("11s: Delta ms = ");
-    Serial.println(deltaMillis);
-  }
+  Serial.print(TimerInterval[12]/1000);
+  Serial.print("s: Delta ms = ");
+  Serial.print(deltaMillis);
+  Serial.print(", ms = ");
+  Serial.println(currentMillis);
 #endif
 
-  previousMillis = millis();
+  previousMillis = currentMillis;
 }
 
-// In Teensy, avoid doing something fancy in ISR, for example complex Serial.print with String() argument
-// The pure simple Serial.prints here are just for demonstration and testing. Must be eliminate in working environment
-// Or you can get this run-time error / crash
-void doingSomething101s()
+void doingSomething13()
 {
-  static unsigned long previousMillis = lastMillis;
-  unsigned long deltaMillis = millis() - previousMillis;
+  static unsigned long previousMillis = startMillis;
+  
+  unsigned long currentMillis = millis();
+  unsigned long deltaMillis   = currentMillis - previousMillis;
 
 #if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-  if (previousMillis > TIMER_INTERVAL_101S)
-  {
-    Serial.print("101s: Delta ms = ");
-    Serial.println(deltaMillis);
-  }
+  Serial.print(TimerInterval[13]/1000);
+  Serial.print("s: Delta ms = ");
+  Serial.print(deltaMillis);
+  Serial.print(", ms = ");
+  Serial.println(currentMillis);
 #endif
 
-  previousMillis = millis();
+  previousMillis = currentMillis;
 }
+
+void doingSomething14()
+{
+  static unsigned long previousMillis = startMillis;
+  
+  unsigned long currentMillis = millis();
+  unsigned long deltaMillis   = currentMillis - previousMillis;
+
+#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
+  Serial.print(TimerInterval[14]/1000);
+  Serial.print("s: Delta ms = ");
+  Serial.print(deltaMillis);
+  Serial.print(", ms = ");
+  Serial.println(currentMillis);
+#endif
+
+  previousMillis = currentMillis;
+}
+
+void doingSomething15()
+{
+  static unsigned long previousMillis = startMillis;
+  
+  unsigned long currentMillis = millis();
+  unsigned long deltaMillis   = currentMillis - previousMillis;
+
+#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
+  Serial.print(TimerInterval[15]/1000);
+  Serial.print("s: Delta ms = ");
+  Serial.print(deltaMillis);
+  Serial.print(", ms = ");
+  Serial.println(currentMillis);
+#endif
+
+  previousMillis = currentMillis;
+}
+
+irqCallback irqCallbackFunc[NUMBER_ISR_TIMERS] =
+{
+  doingSomething0,  doingSomething1,  doingSomething2,  doingSomething3, 
+  doingSomething4,  doingSomething5,  doingSomething6,  doingSomething7, 
+  doingSomething8,  doingSomething9,  doingSomething10, doingSomething11,
+  doingSomething12, doingSomething13, doingSomething14, doingSomething15
+};
+
+////////////////////////////////////////////////
+
 
 #define SIMPLE_TIMER_MS        2000L
 
@@ -452,7 +695,7 @@ SimpleTimer simpleTimer;
 // 2. Very long "do", "while", "for" loops without predetermined exit time.
 void simpleTimerDoingSomething2s()
 {
-  static unsigned long previousMillis = lastMillis;
+  static unsigned long previousMillis = startMillis;
   Serial.println("simpleTimerDoingSomething2s: Delta programmed ms = " + String(SIMPLE_TIMER_MS) + ", actual = " + String(millis() - previousMillis));
   previousMillis = millis();
 }
@@ -462,25 +705,25 @@ void setup()
   Serial.begin(115200);
   while (!Serial);
   
-  Serial.println("\nStarting ISR_Timer_Complex on " + String(BOARD_NAME));
+  Serial.println("\nStarting ISR_16_Timers_Array on " + String(BOARD_NAME));
   Serial.println("Version : " + String(TEENSY_TIMER_INTERRUPT_VERSION));
   Serial.println("CPU Frequency = " + String(F_CPU / 1000000) + " MHz");
 
   // Interval in microsecs
   if (ITimer.attachInterruptInterval(HW_TIMER_INTERVAL_MS * 1000, TimerHandler))
   {
-    lastMillis = millis();
-    Serial.println("Starting  ITimer OK, millis() = " + String(lastMillis));
+    startMillis = millis();
+    Serial.println("Starting  ITimer OK, millis() = " + String(startMillis));
   }
   else
     Serial.println("Can't set ITimer correctly. Select another freq. or interval");
 
   // Just to demonstrate, don't use too many ISR Timers if not absolutely necessary
   // You can use up to 16 timer for each ISR_Timer
-  ISR_Timer.setInterval(TIMER_INTERVAL_2S, doingSomething2s);
-  ISR_Timer.setInterval(TIMER_INTERVAL_5S, doingSomething5s);
-  ISR_Timer.setInterval(TIMER_INTERVAL_11S, doingSomething11s);
-  ISR_Timer.setInterval(TIMER_INTERVAL_101S, doingSomething101s);
+  for (int i = 0; i < NUMBER_ISR_TIMERS; i++)
+  {
+    ISR_Timer.setInterval(TimerInterval[i], irqCallbackFunc[i]); 
+  }
 
   // You need this timer for non-critical tasks. Avoid abusing ISR if not absolutely necessary.
   simpleTimer.setInterval(SIMPLE_TIMER_MS, simpleTimerDoingSomething2s);
@@ -506,46 +749,78 @@ void loop()
 
 ### Debug Terminal Output Samples
 
-1. The following is the sample terminal output when running example [ISR_Timer_Complex](examples/ISR_Timer_Complex) on **Teensy 4.1** to demonstrate the accuracy of ISR Hardware Timer, **especially when system is very busy or blocked**. The ISR timer is **programmed for 2s, is activated exactly after 2.000s !!!**
+1. The following is the sample terminal output when running example [ISR_16_Timers_Array](examples/ISR_16_Timers_Array) on **Teensy 4.1** to demonstrate the accuracy of ISR Hardware Timer, **especially when system is very busy or blocked**. The 16 independent ISR timers are **programmed to be activated repetitively after certain intervals, is activated exactly after that programmed interval !!!**
 
 While software timer, **programmed for 2s, is activated after 10.000s in loop()!!!**.
 
+In this example, 16 independent ISR Timers are used and utilized just one Hardware Timer. The Timer Intervals and Function Pointers are stored in arrays to facilitate the code modification.
+
 ```
-Starting ISR_Timer_Complex on Teensy 4.0/4.1
-Version : 1.0.0
+Starting ISR_16_Timers_Array on Teensy 4.0/4.1
+Version : 1.0.1
 CPU Frequency = 600 MHz
 TEENSY_TIMER_1, F_BUS_ACTUAL (MHz) = 150, request interval = 1000, actual interval (us) = 999
 Prescale = 2, _timerCount = 18750
-Starting  ITimer OK, millis() = 852
-2s: Delta ms = 2000
-2s: Delta ms = 2000
-2s: Delta ms = 2000
+Starting  ITimer OK, millis() = 1241
+1s: Delta ms = 1000, ms = 2241
+1s: Delta ms = 1000, ms = 3241
+2s: Delta ms = 2000, ms = 3241
+1s: Delta ms = 1000, ms = 4241
+3s: Delta ms = 3000, ms = 4241
+1s: Delta ms = 1000, ms = 5241
+2s: Delta ms = 2000, ms = 5241
+4s: Delta ms = 4000, ms = 5241
+1s: Delta ms = 1000, ms = 6241
+5s: Delta ms = 5000, ms = 6241
+1s: Delta ms = 1000, ms = 7241
+2s: Delta ms = 2000, ms = 7241
+3s: Delta ms = 3000, ms = 7241
+6s: Delta ms = 6000, ms = 7241
+1s: Delta ms = 1000, ms = 8241
+7s: Delta ms = 7000, ms = 8241
+1s: Delta ms = 1000, ms = 9241
+2s: Delta ms = 2000, ms = 9241
+4s: Delta ms = 4000, ms = 9241
+8s: Delta ms = 8000, ms = 9241
+1s: Delta ms = 1000, ms = 10241
+3s: Delta ms = 3000, ms = 10241
+9s: Delta ms = 9000, ms = 10241
 simpleTimerDoingSomething2s: Delta programmed ms = 2000, actual = 10000
-2s: Delta ms = 2000
-5s: Delta ms = 5000
-2s: Delta ms = 2000
-2s: Delta ms = 2000
-5s: Delta ms = 5000
-2s: Delta ms = 2000
-2s: Delta ms = 2000
+1s: Delta ms = 1000, ms = 11241
+2s: Delta ms = 2000, ms = 11241
+5s: Delta ms = 5000, ms = 11241
+10s: Delta ms = 10000, ms = 11241
+1s: Delta ms = 1000, ms = 12241
+11s: Delta ms = 11000, ms = 12241
+1s: Delta ms = 1000, ms = 13241
+2s: Delta ms = 2000, ms = 13241
+3s: Delta ms = 3000, ms = 13241
+4s: Delta ms = 4000, ms = 13241
+6s: Delta ms = 6000, ms = 13241
+12s: Delta ms = 12000, ms = 13241
+1s: Delta ms = 1000, ms = 14241
+13s: Delta ms = 13000, ms = 14241
+1s: Delta ms = 1000, ms = 15241
+2s: Delta ms = 2000, ms = 15241
+7s: Delta ms = 7000, ms = 15241
+14s: Delta ms = 14000, ms = 15241
+1s: Delta ms = 1000, ms = 16241
+3s: Delta ms = 3000, ms = 16241
+5s: Delta ms = 5000, ms = 16241
+15s: Delta ms = 15000, ms = 16241
+1s: Delta ms = 1000, ms = 17241
+2s: Delta ms = 2000, ms = 17241
+4s: Delta ms = 4000, ms = 17241
+8s: Delta ms = 8000, ms = 17241
+16s: Delta ms = 16000, ms = 17241
+1s: Delta ms = 1000, ms = 18241
+1s: Delta ms = 1000, ms = 19241
+2s: Delta ms = 2000, ms = 19241
+3s: Delta ms = 3000, ms = 19241
+6s: Delta ms = 6000, ms = 19241
+9s: Delta ms = 9000, ms = 19241
+1s: Delta ms = 1000, ms = 20241
 simpleTimerDoingSomething2s: Delta programmed ms = 2000, actual = 10000
-2s: Delta ms = 2000
-5s: Delta ms = 5000
-2s: Delta ms = 2000
-11s: Delta ms = 11000
-2s: Delta ms = 2000
-5s: Delta ms = 5000
-2s: Delta ms = 2000
-2s: Delta ms = 2000
-simpleTimerDoingSomething2s: Delta programmed ms = 2000, actual = 10000
-2s: Delta ms = 2000
-5s: Delta ms = 5000
-2s: Delta ms = 2000
-11s: Delta ms = 11000
-2s: Delta ms = 2000
-5s: Delta ms = 5000
-2s: Delta ms = 2000
-2s: Delta ms = 2000
 ```
 
 ---
@@ -554,7 +829,7 @@ simpleTimerDoingSomething2s: Delta programmed ms = 2000, actual = 10000
 
 ```
 Starting TimerInterruptTest on Teensy 4.0/4.1
-Version : 1.0.0
+Version : 1.0.1
 CPU Frequency = 600 MHz
 TEENSY_TIMER_1, F_BUS_ACTUAL (MHz) = 150, request interval = 30000, actual interval (us) = 29999
 Prescale = 7, _timerCount = 17578
@@ -595,7 +870,7 @@ TeensyTimerInterrupt:stopTimer TEENSY_TIMER_1
 
 ```
 Starting Argument_None on Teensy 4.0/4.1
-Version : 1.0.0
+Version : 1.0.1
 CPU Frequency = 600 MHz
 TEENSY_TIMER_1, F_BUS_ACTUAL (MHz) = 150, request interval = 50000, actual interval (us) = 49998
 Prescale = 7, _timerCount = 29296
@@ -636,6 +911,10 @@ ITimer0: millis() = 2179, delta = 50
 ```
 ---
 ---
+
+### Releases v1.0.1
+
+1. Add complicated example [ISR_16_Timers_Array](examples/ISR_16_Timers_Array) utilizing and demonstrating the full usage of 16 independent ISR Timers.
 
 ### Releases v1.0.0
 
