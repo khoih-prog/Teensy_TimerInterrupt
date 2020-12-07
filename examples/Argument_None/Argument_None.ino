@@ -19,12 +19,13 @@
    Based on BlynkTimer.h
    Author: Volodymyr Shymanskyy
 
-   Version: 1.0.1
+   Version: 1.1.1
 
    Version Modified By   Date      Comments
    ------- -----------  ---------- -----------
    1.0.0   K Hoang      04/11/2020 Initial coding
    1.0.1   K Hoang      06/11/2020 Add complicated example ISR_16_Timers_Array using all 16 independent ISR Timers.
+   1.1.1   K.Hoang      06/12/2020 Add complex examples. Bump up version to sync with other TimerInterrupt Libraries
 *****************************************************************************************************************************/
 
 /*
@@ -40,25 +41,25 @@
 */
 
 #if !( defined(CORE_TEENSY) || defined(TEENSYDUINO) )
-  #error This code is designed to run on Teensy platform! Please check your Tools->Board setting.
+ #error This code is designed to run on Teensy platform! Please check your Tools->Board setting.
 #endif
 
 // These define's must be placed at the beginning before #include "TeensyTimerInterrupt.h"
-// Don't define Teensy_TEENSY_TIMER_INTERRUPT_DEBUG > 2. Only for special ISR debugging only. Can hang the system.
-#define TEENSY_TIMER_INTERRUPT_DEBUG      1
+// Don't define Teensy_TEENSY_TIMER_INTERRUPT_DEBUG > 0. Only for special ISR debugging only. Can hang the system.
+#define TEENSY_TIMER_INTERRUPT_DEBUG      0
 
 #include "TeensyTimerInterrupt.h"
 
 #ifndef LED_BUILTIN
-  #define LED_BUILTIN       13
+#define LED_BUILTIN       13
 #endif
 
 #ifndef LED_BLUE
-  #define LED_BLUE          2
+#define LED_BLUE          2
 #endif
 
 #ifndef LED_RED
-  #define LED_RED           3
+#define LED_RED           3
 #endif
 
 
@@ -100,9 +101,9 @@ void setup()
   while (!Serial);
 
   delay(100);
-  
+
   Serial.println("\nStarting Argument_None on " + String(BOARD_NAME));
-  Serial.println("Version : " + String(TEENSY_TIMER_INTERRUPT_VERSION));
+  Serial.println(TEENSY_TIMER_INTERRUPT_VERSION);
   Serial.println("CPU Frequency = " + String(F_CPU / 1000000) + " MHz");
 
   // Interval in microsecs

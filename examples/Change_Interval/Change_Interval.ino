@@ -1,5 +1,5 @@
 /****************************************************************************************************************************
-   TimerInterruptLEDDemo.ino
+   Change_Interval.ino
    For Teensy boards
    Written by Khoi Hoang
 
@@ -41,12 +41,14 @@
 */
 
 #if !( defined(CORE_TEENSY) || defined(TEENSYDUINO) )
-  #error This code is designed to run on Teensy platform! Please check your Tools->Board setting.
+ #error This code is designed to run on Teensy platform! Please check your Tools->Board setting.
 #endif
 
 // These define's must be placed at the beginning before #include "TeensyTimerInterrupt.h"
-// Don't define Teensy_TEENSY_TIMER_INTERRUPT_DEBUG > 2. Only for special ISR debugging only. Can hang the system.
-#define TEENSY_TIMER_INTERRUPT_DEBUG      1
+// Don't define Teensy_TEENSY_TIMER_INTERRUPT_DEBUG > 0. Only for special ISR debugging only. Can hang the system.
+#define TEENSY_TIMER_INTERRUPT_DEBUG      0
+
+#include "TeensyTimerInterrupt.h"
 
 #ifndef LED_BUILTIN
   #define LED_BUILTIN       13
@@ -57,83 +59,86 @@
 #endif
 
 #ifndef LED_RED
-  #define LED_RED           3
+# define LED_RED           3
 #endif
 
-#include "TeensyTimerInterrupt.h"   
-#include "Teensy_ISR_Timer.h"
+// For Teensy 4.0/4.1, F_BUS_ACTUAL = 150 MHz => max period is only 55922 us (~17.9 Hz)
 
-#define HW_TIMER_INTERVAL_MS      1L
+#define TIMER_INTERVAL_MS        10
+
+volatile uint32_t TimerCount = 0;
 
 // You can select Teensy Hardware Timer  from TEENSY_TIMER_1 or TEENSY_TIMER_3
 
 // Init Teensy timer TEENSY_TIMER_1
 TeensyTimer ITimer(TEENSY_TIMER_1);
 
-// Init Teensy_ISR_Timer
-// Each Teensy_ISR_Timer can service 16 different ISR-based timers
-Teensy_ISR_Timer ISR_Timer;
-
-#define TIMER_INTERVAL_0_5S           500L
-#define TIMER_INTERVAL_1S             1000L
-#define TIMER_INTERVAL_1_5S           1500L
+void printResult(uint32_t currTime)
+{
+  Serial.printf("Time = %ld, TimerCount = %lu\n", currTime, TimerCount);
+}
 
 void TimerHandler(void)
 {
-  ISR_Timer.run();
-}
+  static bool toggle = false;
 
-// In Teensy, avoid doing something fancy in ISR, for example complex Serial.print with String() argument
-// The pure simple Serial.prints here are just for demonstration and testing. Must be eliminate in working environment
-// Or you can get this run-time error / crash
-void doingSomething1()
-{
-  digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
-}
+  // Flag for checking to be sure ISR is working as SErial.print is not OK here in ISR
+  TimerCount++;
 
-void doingSomething2()
-{
-  digitalWrite(LED_BLUE, !digitalRead(LED_BLUE));
-}
-void doingSomething3()
-{
-  digitalWrite(LED_RED, !digitalRead(LED_RED));
+  //timer interrupt toggles pin LED_BUILTIN
+  digitalWrite(LED_BUILTIN, toggle);
+  toggle = !toggle;
 }
 
 void setup()
 {
+  pinMode(LED_BUILTIN, OUTPUT);
+  
   Serial.begin(115200);
   while (!Serial);
 
-  Serial.println("\nTimerInterruptLEDDemo on " + String(BOARD_NAME));
+  delay(100);
+
+  Serial.printf("\nStarting Change_Interval on %s\n", BOARD_NAME);
   Serial.println(TEENSY_TIMER_INTERRUPT_VERSION);
   Serial.println("CPU Frequency = " + String(F_CPU / 1000000) + " MHz");
-
-  // Instantiate HardwareTimer object. Thanks to 'new' instanciation, HardwareTimer is not destructed when setup() function is finished.
-  //HardwareTimer *MyTim = new HardwareTimer(Instance);
-
-  // configure pin in output mode
-  pinMode(LED_BUILTIN,  OUTPUT);
-  pinMode(LED_BLUE,     OUTPUT);
-  pinMode(LED_RED,      OUTPUT);
-
+ 
   // Interval in microsecs
-  if (ITimer.attachInterruptInterval(HW_TIMER_INTERVAL_MS * 1000, TimerHandler))
+  if (ITimer.attachInterruptInterval(TIMER_INTERVAL_MS * 1000, TimerHandler))
   {
-    Serial.println("Starting  ITimer OK, millis() = " + String(millis()));
+    Serial.printf("Starting  ITimer OK, millis() = %ld\n", millis());
   }
   else
-    Serial.println("Can't set ITimer correctly. Select another freq. or interval");
-
-  // Just to demonstrate, don't use too many ISR Timers if not absolutely necessary
-  // You can use up to 16 timer for each ISR_Timer
-  ISR_Timer.setInterval(TIMER_INTERVAL_0_5S,  doingSomething1);
-  ISR_Timer.setInterval(TIMER_INTERVAL_1S,    doingSomething2);
-  ISR_Timer.setInterval(TIMER_INTERVAL_1_5S,  doingSomething3);
+    Serial.println("Can't set ITimer. Select another freq. or timer"); 
 }
 
+#define CHECK_INTERVAL_MS     10000L
+#define CHANGE_INTERVAL_MS    20000L
 
 void loop()
 {
-  /* Nothing to do all is done by hardware. Even no interrupt required. */
+  static uint32_t lastTime = 0;
+  static uint32_t lastChangeTime = 0;
+  static uint32_t currTime;
+  static uint32_t multFactor = 0;
+
+  currTime = millis();
+
+  if (currTime - lastTime > CHECK_INTERVAL_MS)
+  {
+    printResult(currTime);
+    lastTime = currTime;
+
+    if (currTime - lastChangeTime > CHANGE_INTERVAL_MS)
+    {
+      //setInterval(unsigned long interval, timerCallback callback)
+      multFactor = (multFactor + 1) % 2;
+      
+      ITimer.setInterval(TIMER_INTERVAL_MS * 1000 * (multFactor + 1), TimerHandler);
+
+      Serial.printf("Changing Interval, Timer = %lu\n", TIMER_INTERVAL_MS * (multFactor + 1));
+      
+      lastChangeTime = currTime;
+    }
+  }
 }

@@ -19,12 +19,13 @@
    Based on BlynkTimer.h
    Author: Volodymyr Shymanskyy
 
-   Version: 1.0.1
+   Version: 1.1.1
 
    Version Modified By   Date      Comments
    ------- -----------  ---------- -----------
    1.0.0   K Hoang      04/11/2020 Initial coding
    1.0.1   K Hoang      06/11/2020 Add complicated example ISR_16_Timers_Array using all 16 independent ISR Timers.
+   1.1.1   K.Hoang      06/12/2020 Add complex examples. Bump up version to sync with other TimerInterrupt Libraries
 *****************************************************************************************************************************/
 
 #pragma once
@@ -33,7 +34,7 @@
   #error This code is designed to run on Teensy platform! Please check your Tools->Board setting.
 #endif
 
-#define TEENSY_TIMER_INTERRUPT_VERSION       "1.0.1"
+#define TEENSY_TIMER_INTERRUPT_VERSION       "Teensy_TimerInterrupt v1.1.1"
 
 #ifndef TEENSY_TIMER_INTERRUPT_DEBUG
   #define TEENSY_TIMER_INTERRUPT_DEBUG       0

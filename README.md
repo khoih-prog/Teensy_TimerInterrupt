@@ -23,7 +23,7 @@ For Teensy 4.x, this library will be expanded to use other available hardware ti
 
 Imagine you have a system with a **mission-critical** function, measuring water level and control the sump pump or doing something much more important. You normally use a software timer to poll, or even place the function in loop(). But what if another function is **blocking** the loop() or setup().
 
-So your function **might not be executed, and the result would be disastrous.**
+So your function **might not be executed on-time or not at all, and the result would be disastrous.**
 
 You'd prefer to have your function called, no matter what happening with other functions (busy loop, bug, etc.).
 
@@ -48,6 +48,11 @@ The catch is **your function is now part of an ISR (Interrupt Service Routine), 
 ---
 ---
 
+### Releases v1.1.1
+
+1. Add example [**Change_Interval**](examples/Change_Interval) and [**ISR_16_Timers_Array_Complex**](examples/ISR_16_Timers_Array_Complex)
+2. Bump up version to sync with other TimerInterrupt Libraries. Modify Version String.
+
 ### Releases v1.0.1
 
 1. Add complicated example [ISR_16_Timers_Array](examples/ISR_16_Timers_Array) utilizing and demonstrating the full usage of 16 independent ISR Timers.
@@ -69,12 +74,12 @@ The catch is **your function is now part of an ISR (Interrupt Service Routine), 
 ---
 ---
 
-## Prerequisite
+## Prerequisites
 
  1. [`Arduino IDE 1.8.13+` for Arduino](https://www.arduino.cc/en/Main/Software)
  2. [`Teensy Core 1.53+`](https://www.pjrc.com/teensy/td_download.html) for Teensy.
  3. To use with certain example, 
-   - [`SimpleTimer library`](https://github.com/schinken/SimpleTimer) for [ISR_Timer_Complex example](examples/ISR_Timer_Complex).
+   - [`SimpleTimer library`](https://github.com/schinken/SimpleTimer) for [ISR_16_Timers_Array example](examples/ISR_16_Timers_Array).
 
 ---
 ---
@@ -99,7 +104,7 @@ Another way to install is to:
 
 1. Install [VS Code](https://code.visualstudio.com/)
 2. Install [PlatformIO](https://platformio.org/platformio-ide)
-3. Install [**Teensy_TimerInterrupt** library](https://platformio.org/lib/show/11404/Teensy_TimerInterrupt) by using [Library Manager](https://platformio.org/lib/show/11404/Teensy_TimerInterrupt/installation). Search for **Teensy_TimerInterrupt** in [Platform.io Author's Libraries](https://platformio.org/lib/search?query=author:%22Khoi%20Hoang%22)
+3. Install [**Teensy_TimerInterrupt** library](https://platformio.org/lib/show/11404/Teensy_TimerInterrupt) or [**Teensy_TimerInterrupt** library](https://platformio.org/lib/show/11404/Teensy_TimerInterrupt) by using [Library Manager](https://platformio.org/lib/show/11426/Teensy_TimerInterrupt/installation). Search for **Teensy_TimerInterrupt** in [Platform.io Author's Libraries](https://platformio.org/lib/search?query=author:%22Khoi%20Hoang%22)
 4. Use included [platformio.ini](platformio/platformio.ini) file from examples to ensure that all dependent libraries will installed automatically. Please visit documentation for the other options and examples at [Project Configuration File](https://docs.platformio.org/page/projectconf.html)
 
 ---
@@ -288,12 +293,14 @@ void setup()
  6. [SwitchDebounce](examples/SwitchDebounce)
  7. [TimerInterruptTest](examples/TimerInterruptTest)
  8. [TimerInterruptLEDDemo](examples/TimerInterruptLEDDemo)
+ 9. [**Change_Interval**](examples/Change_Interval). New
+10. [**ISR_16_Timers_Array_Complex**](examples/ISR_16_Timers_Array_Complex). New
 
 
 ---
 ---
 
-### Example [ISR_16_Timers_Array](examples/ISR_16_Timers_Array)
+### Example [ISR_16_Timers_Array_Complex](examples/ISR_16_Timers_Array_Complex)
 
 ```
 #if !( defined(CORE_TEENSY) || defined(TEENSYDUINO) )
@@ -321,7 +328,7 @@ void setup()
   #define LED_RED           3
 #endif
 
-#define HW_TIMER_INTERVAL_MS      1L
+#define HW_TIMER_INTERVAL_US      10000L
 
 volatile uint32_t startMillis = 0;
 
@@ -334,30 +341,19 @@ TeensyTimer ITimer(TEENSY_TIMER_1);
 // Each Teensy_ISR_Timer can service 16 different ISR-based timers
 Teensy_ISR_Timer ISR_Timer;
 
-#ifndef LED_BUILTIN
-  #define LED_BUILTIN       13
-#endif
-
 #define LED_TOGGLE_INTERVAL_MS        2000L
 
 void TimerHandler(void)
 {
   static bool toggle  = false;
-  static bool started = false;
   static int timeRun  = 0;
 
   ISR_Timer.run();
 
-  // Toggle LED every LED_TOGGLE_INTERVAL_MS = 5000ms = 5s
-  if (++timeRun == (LED_TOGGLE_INTERVAL_MS / HW_TIMER_INTERVAL_MS) )
+  // Toggle LED every LED_TOGGLE_INTERVAL_MS = 2000ms = 2s
+  if (++timeRun == ((LED_TOGGLE_INTERVAL_MS * 1000) / HW_TIMER_INTERVAL_US) )
   {
     timeRun = 0;
-
-    if (!started)
-    {
-      started = true;
-      pinMode(LED_BUILTIN, OUTPUT);
-    }
 
     //timer interrupt toggles pin LED_BUILTIN
     digitalWrite(LED_BUILTIN, toggle);
@@ -365,271 +361,181 @@ void TimerHandler(void)
   }
 }
 
-#define NUMBER_ISR_TIMERS         16
+/////////////////////////////////////////////////
 
-// You can assign any interval for any timer here, in milliseconds
-uint32_t TimerInterval[NUMBER_ISR_TIMERS] =
-{
-  1000L,  2000L,  3000L,  4000L,  5000L,  6000L,  7000L,  8000L,
-  9000L, 10000L, 11000L, 12000L, 13000L, 14000L, 15000L, 16000L
-};
+#define NUMBER_ISR_TIMERS         16
 
 typedef void (*irqCallback)  (void);
 
-#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-void printStatus(uint16_t index, unsigned long deltaMillis, unsigned long currentMillis)
-{
-  Serial.print(TimerInterval[index]/1000);
-  Serial.print("s: Delta ms = ");
-  Serial.print(deltaMillis);
-  Serial.print(", ms = ");
-  Serial.println(currentMillis);
-}
+/////////////////////////////////////////////////
+
+#define USE_COMPLEX_STRUCT      true
+
+#if USE_COMPLEX_STRUCT
+
+  typedef struct 
+  {
+    irqCallback   irqCallbackFunc;
+    uint32_t      TimerInterval;
+    unsigned long deltaMillis;
+    unsigned long previousMillis;
+  } ISRTimerData;
+  
+  // In NRF52, avoid doing something fancy in ISR, for example Serial.print()
+  // The pure simple Serial.prints here are just for demonstration and testing. Must be eliminate in working environment
+  // Or you can get this run-time error / crash
+  
+  void doingSomething(int index);
+
+#else
+
+  volatile unsigned long deltaMillis    [NUMBER_ISR_TIMERS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+  volatile unsigned long previousMillis [NUMBER_ISR_TIMERS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+  
+  // You can assign any interval for any timer here, in milliseconds
+  uint32_t TimerInterval[NUMBER_ISR_TIMERS] =
+  {
+    5000L,  10000L,  15000L,  20000L,  25000L,  30000L,  35000L,  40000L,
+    45000L, 50000L,  55000L,  60000L,  65000L,  70000L,  75000L,  80000L
+  };
+  
+  void doingSomething(int index)
+  {
+    unsigned long currentMillis  = millis();
+    
+    deltaMillis[index]    = currentMillis - previousMillis[index];
+    previousMillis[index] = currentMillis;
+  }
+
 #endif
 
-// In Teensy, avoid doing something fancy in ISR, for example complex Serial.print with String() argument
-// The pure simple Serial.prints here are just for demonstration and testing. Must be eliminate in working environment
-// Or you can get this run-time error / crash
+////////////////////////////////////
+// Shared
+////////////////////////////////////
+
 void doingSomething0()
 {
-  static unsigned long previousMillis = startMillis;
-  
-  unsigned long currentMillis = millis();
-  unsigned long deltaMillis   = currentMillis - previousMillis;
-
-#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-  printStatus(0, deltaMillis, currentMillis);
-#endif
-
-  previousMillis = currentMillis;
+  doingSomething(0);
 }
 
 void doingSomething1()
 {
-  static unsigned long previousMillis = startMillis;
-  
-  unsigned long currentMillis = millis();
-  unsigned long deltaMillis   = currentMillis - previousMillis;
-
-#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-  printStatus(1, deltaMillis, currentMillis);
-#endif
-
-  previousMillis = currentMillis;
+  doingSomething(1);
 }
 
 void doingSomething2()
 {
-  static unsigned long previousMillis = startMillis;
-  
-  unsigned long currentMillis = millis();
-  unsigned long deltaMillis   = currentMillis - previousMillis;
-
-#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-  printStatus(2, deltaMillis, currentMillis);
-#endif
-
-  previousMillis = currentMillis;
+  doingSomething(2);
 }
 
 void doingSomething3()
 {
-  static unsigned long previousMillis = startMillis;
-  
-  unsigned long currentMillis = millis();
-  unsigned long deltaMillis   = currentMillis - previousMillis;
-
-#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-  printStatus(3, deltaMillis, currentMillis);
-#endif
-
-  previousMillis = currentMillis;
+  doingSomething(3);
 }
 
 void doingSomething4()
 {
-  static unsigned long previousMillis = startMillis;
-  
-  unsigned long currentMillis = millis();
-  unsigned long deltaMillis   = currentMillis - previousMillis;
-
-#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-  printStatus(4, deltaMillis, currentMillis);
-#endif
-
-  previousMillis = currentMillis;
+  doingSomething(4);
 }
 
 void doingSomething5()
 {
-  static unsigned long previousMillis = startMillis;
-  
-  unsigned long currentMillis = millis();
-  unsigned long deltaMillis   = currentMillis - previousMillis;
-
-#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-  printStatus(5, deltaMillis, currentMillis);
-#endif
-
-  previousMillis = currentMillis;
+  doingSomething(5);
 }
 
 void doingSomething6()
 {
-  static unsigned long previousMillis = startMillis;
-  
-  unsigned long currentMillis = millis();
-  unsigned long deltaMillis   = currentMillis - previousMillis;
-
-#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-  printStatus(6, deltaMillis, currentMillis);
-#endif
-
-  previousMillis = currentMillis;
+  doingSomething(6);
 }
 
 void doingSomething7()
 {
-  static unsigned long previousMillis = startMillis;
-  
-  unsigned long currentMillis = millis();
-  unsigned long deltaMillis   = currentMillis - previousMillis;
-
-#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-  printStatus(7, deltaMillis, currentMillis);
-#endif
-
-  previousMillis = currentMillis;
+  doingSomething(7);
 }
 
 void doingSomething8()
 {
-  static unsigned long previousMillis = startMillis;
-  
-  unsigned long currentMillis = millis();
-  unsigned long deltaMillis   = currentMillis - previousMillis;
-
-#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-  printStatus(8, deltaMillis, currentMillis);
-#endif
-
-  previousMillis = currentMillis;
+  doingSomething(8);
 }
 
 void doingSomething9()
 {
-  static unsigned long previousMillis = startMillis;
-  
-  unsigned long currentMillis = millis();
-  unsigned long deltaMillis   = currentMillis - previousMillis;
-
-#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-  printStatus(9, deltaMillis, currentMillis);
-#endif
-
-  previousMillis = currentMillis;
+  doingSomething(9);
 }
 
 void doingSomething10()
 {
-  static unsigned long previousMillis = startMillis;
-  
-  unsigned long currentMillis = millis();
-  unsigned long deltaMillis   = currentMillis - previousMillis;
-
-#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-  printStatus(10, deltaMillis, currentMillis);
-#endif
-
-  previousMillis = currentMillis;
+  doingSomething(10);
 }
 
-// In Teensy, avoid doing something fancy in ISR, for example complex Serial.print with String() argument
-// The pure simple Serial.prints here are just for demonstration and testing. Must be eliminate in working environment
-// Or you can get this run-time error / crash
 void doingSomething11()
 {
-  static unsigned long previousMillis = startMillis;
-  
-  unsigned long currentMillis = millis();
-  unsigned long deltaMillis   = currentMillis - previousMillis;
-
-#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-  printStatus(11, deltaMillis, currentMillis);
-#endif
-
-  previousMillis = currentMillis;
+  doingSomething(11);
 }
 
-// In Teensy, avoid doing something fancy in ISR, for example complex Serial.print with String() argument
-// The pure simple Serial.prints here are just for demonstration and testing. Must be eliminate in working environment
-// Or you can get this run-time error / crash
 void doingSomething12()
 {
-  static unsigned long previousMillis = startMillis;
-  
-  unsigned long currentMillis = millis();
-  unsigned long deltaMillis   = currentMillis - previousMillis;
-
-#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-  printStatus(12, deltaMillis, currentMillis);
-#endif
-
-  previousMillis = currentMillis;
+  doingSomething(12);
 }
 
 void doingSomething13()
 {
-  static unsigned long previousMillis = startMillis;
-  
-  unsigned long currentMillis = millis();
-  unsigned long deltaMillis   = currentMillis - previousMillis;
-
-#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-  printStatus(13, deltaMillis, currentMillis);
-#endif
-
-  previousMillis = currentMillis;
+  doingSomething(13);
 }
 
 void doingSomething14()
 {
-  static unsigned long previousMillis = startMillis;
-  
-  unsigned long currentMillis = millis();
-  unsigned long deltaMillis   = currentMillis - previousMillis;
-
-#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-  printStatus(14, deltaMillis, currentMillis);
-#endif
-
-  previousMillis = currentMillis;
+  doingSomething(14);
 }
 
 void doingSomething15()
 {
-  static unsigned long previousMillis = startMillis;
-  
-  unsigned long currentMillis = millis();
-  unsigned long deltaMillis   = currentMillis - previousMillis;
-
-#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-  printStatus(15, deltaMillis, currentMillis);
-#endif
-
-  previousMillis = currentMillis;
+  doingSomething(15);
 }
 
-irqCallback irqCallbackFunc[NUMBER_ISR_TIMERS] =
-{
-  doingSomething0,  doingSomething1,  doingSomething2,  doingSomething3, 
-  doingSomething4,  doingSomething5,  doingSomething6,  doingSomething7, 
-  doingSomething8,  doingSomething9,  doingSomething10, doingSomething11,
-  doingSomething12, doingSomething13, doingSomething14, doingSomething15
-};
+#if USE_COMPLEX_STRUCT
 
-////////////////////////////////////////////////
+  ISRTimerData curISRTimerData[NUMBER_ISR_TIMERS] =
+  {
+    //irqCallbackFunc, TimerInterval, deltaMillis, previousMillis
+    { doingSomething0,    5000L, 0, 0 },
+    { doingSomething1,   10000L, 0, 0 },
+    { doingSomething2,   15000L, 0, 0 },
+    { doingSomething3,   20000L, 0, 0 },
+    { doingSomething4,   25000L, 0, 0 },
+    { doingSomething5,   30000L, 0, 0 },
+    { doingSomething6,   35000L, 0, 0 },
+    { doingSomething7,   40000L, 0, 0 },
+    { doingSomething8,   45000L, 0, 0 },
+    { doingSomething9,   50000L, 0, 0 },
+    { doingSomething10,  55000L, 0, 0 },
+    { doingSomething11,  60000L, 0, 0 },
+    { doingSomething12,  65000L, 0, 0 },
+    { doingSomething13,  70000L, 0, 0 },
+    { doingSomething14,  75000L, 0, 0 },
+    { doingSomething15,  80000L, 0, 0 }
+  };
+  
+  void doingSomething(int index)
+  {
+    unsigned long currentMillis  = millis();
+    
+    curISRTimerData[index].deltaMillis    = currentMillis - curISRTimerData[index].previousMillis;
+    curISRTimerData[index].previousMillis = currentMillis;
+  }
 
+#else
+
+  irqCallback irqCallbackFunc[NUMBER_ISR_TIMERS] =
+  {
+    doingSomething0,  doingSomething1,  doingSomething2,  doingSomething3,
+    doingSomething4,  doingSomething5,  doingSomething6,  doingSomething7,
+    doingSomething8,  doingSomething9,  doingSomething10, doingSomething11,
+    doingSomething12, doingSomething13, doingSomething14, doingSomething15
+  };
+
+#endif
+///////////////////////////////////////////
 
 #define SIMPLE_TIMER_MS        2000L
 
@@ -643,24 +549,39 @@ SimpleTimer simpleTimer;
 void simpleTimerDoingSomething2s()
 {
   static unsigned long previousMillis = startMillis;
-  Serial.println("simpleTimerDoingSomething2s: Delta programmed ms = " + String(SIMPLE_TIMER_MS) + ", actual = " + String(millis() - previousMillis));
-  previousMillis = millis();
+
+  unsigned long currMillis = millis();
+
+  Serial.printf("SimpleTimer : %lus, ms = %lu, Dms : %lu\n", SIMPLE_TIMER_MS / 1000, currMillis, currMillis - previousMillis);
+
+  for (int i = 0; i < NUMBER_ISR_TIMERS; i++)
+  {
+#if USE_COMPLEX_STRUCT    
+    Serial.printf("Timer : %d, programmed : %lu, actual : %lu\n", i, curISRTimerData[i].TimerInterval, curISRTimerData[i].deltaMillis);
+#else
+    Serial.printf("Timer : %d, programmed : %lu, actual : %lu\n", i, TimerInterval[i], deltaMillis[i]);
+#endif    
+  }
+
+  previousMillis = currMillis;
 }
 
 void setup()
 {
+  pinMode(LED_BUILTIN, OUTPUT);
+
   Serial.begin(115200);
   while (!Serial);
-  
-  Serial.println("\nStarting ISR_16_Timers_Array on " + String(BOARD_NAME));
-  Serial.println("Version : " + String(TEENSY_TIMER_INTERRUPT_VERSION));
+
+  Serial.println("\nStarting ISR_16_Timers_Array_Complex on " + String(BOARD_NAME));
+  Serial.println(TEENSY_TIMER_INTERRUPT_VERSION);
   Serial.println("CPU Frequency = " + String(F_CPU / 1000000) + " MHz");
 
   // Interval in microsecs
-  if (ITimer.attachInterruptInterval(HW_TIMER_INTERVAL_MS * 1000, TimerHandler))
+  if (ITimer.attachInterruptInterval(HW_TIMER_INTERVAL_US, TimerHandler))
   {
     startMillis = millis();
-    Serial.println("Starting  ITimer OK, millis() = " + String(startMillis));
+    Serial.printf("Starting  ITimer OK, millis() = %ld\n", startMillis);
   }
   else
     Serial.println("Can't set ITimer correctly. Select another freq. or interval");
@@ -669,7 +590,13 @@ void setup()
   // You can use up to 16 timer for each ISR_Timer
   for (int i = 0; i < NUMBER_ISR_TIMERS; i++)
   {
-    ISR_Timer.setInterval(TimerInterval[i], irqCallbackFunc[i]); 
+#if USE_COMPLEX_STRUCT
+    curISRTimerData[i].previousMillis = startMillis;
+    ISR_Timer.setInterval(curISRTimerData[i].TimerInterval, curISRTimerData[i].irqCallbackFunc);
+#else
+    previousMillis[i] = startMillis;
+    ISR_Timer.setInterval(TimerInterval[i], irqCallbackFunc[i]);
+#endif    
   }
 
   // You need this timer for non-critical tasks. Avoid abusing ISR if not absolutely necessary.
@@ -704,7 +631,7 @@ In this example, 16 independent ISR Timers are used and utilized just one Hardwa
 
 ```
 Starting ISR_16_Timers_Array on Teensy 4.0/4.1
-Version : 1.0.1
+Teensy_TimerInterrupt v1.1.1
 CPU Frequency = 600 MHz
 TEENSY_TIMER_1, F_BUS_ACTUAL (MHz) = 150, request interval = 1000, actual interval (us) = 999
 Prescale = 2, _timerCount = 18750
@@ -776,7 +703,7 @@ simpleTimerDoingSomething2s: Delta programmed ms = 2000, actual = 10000
 
 ```
 Starting TimerInterruptTest on Teensy 4.0/4.1
-Version : 1.0.1
+Teensy_TimerInterrupt v1.1.1
 CPU Frequency = 600 MHz
 TEENSY_TIMER_1, F_BUS_ACTUAL (MHz) = 150, request interval = 30000, actual interval (us) = 29999
 Prescale = 7, _timerCount = 17578
@@ -817,7 +744,7 @@ TeensyTimerInterrupt:stopTimer TEENSY_TIMER_1
 
 ```
 Starting Argument_None on Teensy 4.0/4.1
-Version : 1.0.1
+Teensy_TimerInterrupt v1.1.1
 CPU Frequency = 600 MHz
 TEENSY_TIMER_1, F_BUS_ACTUAL (MHz) = 150, request interval = 50000, actual interval (us) = 49998
 Prescale = 7, _timerCount = 29296
@@ -856,8 +783,192 @@ ITimer0: millis() = 2129, delta = 50
 ITimer0: millis() = 2179, delta = 50
 
 ```
+
+---
+
+4. The following is the sample terminal output when running example [Change_Interval](examples/Change_Interval) to demonstrate how to change Timer Interval on-the-fly
+
+```
+Starting Change_Interval on Teensy 4.0/4.1
+Teensy_TimerInterrupt v1.1.1
+CPU Frequency = 600 MHz
+Starting  ITimer OK, millis() = 1432
+Time = 10001, TimerCount = 857
+Time = 20002, TimerCount = 1857
+Changing Interval, Timer = 20
+Time = 30003, TimerCount = 2358
+Time = 40004, TimerCount = 2858
+Changing Interval, Timer = 10
+Time = 50005, TimerCount = 3857
+Time = 60006, TimerCount = 4857
+Changing Interval, Timer = 20
+Time = 70007, TimerCount = 5357
+Time = 80008, TimerCount = 5857
+Changing Interval, Timer = 10
+Time = 90009, TimerCount = 6857
+Time = 100010, TimerCount = 7857
+Changing Interval, Timer = 20
+```
+
+---
+
+5. The following is the sample terminal output when running new example [ISR_16_Timers_Array_Complex](examples/ISR_16_Timers_Array_Complex) on **Teensy 4.1** to demonstrate the accuracy of ISR Hardware Timer, **especially when system is very busy or blocked**. The 16 independent ISR timers are **programmed to be activated repetitively after certain intervals, is activated exactly after that programmed interval !!!**
+
+While software timer, **programmed for 2s, is activated after 10.000s in loop()!!!**.
+
+In this example, 16 independent ISR Timers are used, yet utilized just one Hardware Timer. The Timer Intervals and Function Pointers are stored in arrays to facilitate the code modification.
+
+```
+Starting ISR_16_Timers_Array_Complex on Teensy 4.0/4.1
+Teensy_TimerInterrupt v1.1.1
+CPU Frequency = 600 MHz
+TEENSY_TIMER_1, F_BUS_ACTUAL (MHz) = 150, request interval = 10000, actual interval (us) = 9999
+Prescale = 5, _timerCount = 23437
+Starting  ITimer OK, millis() = 1247
+SimpleTimer : 2s, ms = 11247, Dms : 10000
+Timer : 0, programmed : 5000, actual : 5000
+Timer : 1, programmed : 10000, actual : 10000
+Timer : 2, programmed : 15000, actual : 0
+Timer : 3, programmed : 20000, actual : 0
+Timer : 4, programmed : 25000, actual : 0
+Timer : 5, programmed : 30000, actual : 0
+Timer : 6, programmed : 35000, actual : 0
+Timer : 7, programmed : 40000, actual : 0
+Timer : 8, programmed : 45000, actual : 0
+Timer : 9, programmed : 50000, actual : 0
+Timer : 10, programmed : 55000, actual : 0
+Timer : 11, programmed : 60000, actual : 0
+Timer : 12, programmed : 65000, actual : 0
+Timer : 13, programmed : 70000, actual : 0
+Timer : 14, programmed : 75000, actual : 0
+Timer : 15, programmed : 80000, actual : 0
+SimpleTimer : 2s, ms = 21247, Dms : 10000
+Timer : 0, programmed : 5000, actual : 5000
+Timer : 1, programmed : 10000, actual : 10000
+Timer : 2, programmed : 15000, actual : 15000
+Timer : 3, programmed : 20000, actual : 20000
+Timer : 4, programmed : 25000, actual : 0
+Timer : 5, programmed : 30000, actual : 0
+Timer : 6, programmed : 35000, actual : 0
+Timer : 7, programmed : 40000, actual : 0
+Timer : 8, programmed : 45000, actual : 0
+Timer : 9, programmed : 50000, actual : 0
+Timer : 10, programmed : 55000, actual : 0
+Timer : 11, programmed : 60000, actual : 0
+Timer : 12, programmed : 65000, actual : 0
+Timer : 13, programmed : 70000, actual : 0
+Timer : 14, programmed : 75000, actual : 0
+Timer : 15, programmed : 80000, actual : 0
+SimpleTimer : 2s, ms = 31247, Dms : 10000
+Timer : 0, programmed : 5000, actual : 5000
+Timer : 1, programmed : 10000, actual : 10000
+Timer : 2, programmed : 15000, actual : 15000
+Timer : 3, programmed : 20000, actual : 20000
+Timer : 4, programmed : 25000, actual : 25000
+Timer : 5, programmed : 30000, actual : 30000
+Timer : 6, programmed : 35000, actual : 0
+Timer : 7, programmed : 40000, actual : 0
+Timer : 8, programmed : 45000, actual : 0
+Timer : 9, programmed : 50000, actual : 0
+Timer : 10, programmed : 55000, actual : 0
+Timer : 11, programmed : 60000, actual : 0
+Timer : 12, programmed : 65000, actual : 0
+Timer : 13, programmed : 70000, actual : 0
+Timer : 14, programmed : 75000, actual : 0
+Timer : 15, programmed : 80000, actual : 0
+SimpleTimer : 2s, ms = 41247, Dms : 10000
+Timer : 0, programmed : 5000, actual : 5000
+Timer : 1, programmed : 10000, actual : 10000
+Timer : 2, programmed : 15000, actual : 15000
+Timer : 3, programmed : 20000, actual : 20000
+Timer : 4, programmed : 25000, actual : 25000
+Timer : 5, programmed : 30000, actual : 30000
+Timer : 6, programmed : 35000, actual : 35000
+Timer : 7, programmed : 40000, actual : 40000
+Timer : 8, programmed : 45000, actual : 0
+Timer : 9, programmed : 50000, actual : 0
+Timer : 10, programmed : 55000, actual : 0
+Timer : 11, programmed : 60000, actual : 0
+Timer : 12, programmed : 65000, actual : 0
+Timer : 13, programmed : 70000, actual : 0
+Timer : 14, programmed : 75000, actual : 0
+Timer : 15, programmed : 80000, actual : 0
+SimpleTimer : 2s, ms = 51247, Dms : 10000
+Timer : 0, programmed : 5000, actual : 5000
+Timer : 1, programmed : 10000, actual : 10000
+Timer : 2, programmed : 15000, actual : 15000
+Timer : 3, programmed : 20000, actual : 20000
+Timer : 4, programmed : 25000, actual : 25000
+Timer : 5, programmed : 30000, actual : 30000
+Timer : 6, programmed : 35000, actual : 35000
+Timer : 7, programmed : 40000, actual : 40000
+Timer : 8, programmed : 45000, actual : 45000
+Timer : 9, programmed : 50000, actual : 50000
+Timer : 10, programmed : 55000, actual : 0
+Timer : 11, programmed : 60000, actual : 0
+Timer : 12, programmed : 65000, actual : 0
+Timer : 13, programmed : 70000, actual : 0
+Timer : 14, programmed : 75000, actual : 0
+Timer : 15, programmed : 80000, actual : 0
+SimpleTimer : 2s, ms = 61247, Dms : 10000
+Timer : 0, programmed : 5000, actual : 5000
+Timer : 1, programmed : 10000, actual : 10000
+Timer : 2, programmed : 15000, actual : 15000
+Timer : 3, programmed : 20000, actual : 20000
+Timer : 4, programmed : 25000, actual : 25000
+Timer : 5, programmed : 30000, actual : 30000
+Timer : 6, programmed : 35000, actual : 35000
+Timer : 7, programmed : 40000, actual : 40000
+Timer : 8, programmed : 45000, actual : 45000
+Timer : 9, programmed : 50000, actual : 50000
+Timer : 10, programmed : 55000, actual : 55000
+Timer : 11, programmed : 60000, actual : 60000
+Timer : 12, programmed : 65000, actual : 0
+Timer : 13, programmed : 70000, actual : 0
+Timer : 14, programmed : 75000, actual : 0
+Timer : 15, programmed : 80000, actual : 0
+SimpleTimer : 2s, ms = 71247, Dms : 10000
+Timer : 0, programmed : 5000, actual : 5000
+Timer : 1, programmed : 10000, actual : 10000
+Timer : 2, programmed : 15000, actual : 15000
+Timer : 3, programmed : 20000, actual : 20000
+Timer : 4, programmed : 25000, actual : 25000
+Timer : 5, programmed : 30000, actual : 30000
+Timer : 6, programmed : 35000, actual : 35000
+Timer : 7, programmed : 40000, actual : 40000
+Timer : 8, programmed : 45000, actual : 45000
+Timer : 9, programmed : 50000, actual : 50000
+Timer : 10, programmed : 55000, actual : 55000
+Timer : 11, programmed : 60000, actual : 60000
+Timer : 12, programmed : 65000, actual : 65000
+Timer : 13, programmed : 70000, actual : 70000
+Timer : 14, programmed : 75000, actual : 0
+Timer : 15, programmed : 80000, actual : 0
+SimpleTimer : 2s, ms = 81247, Dms : 10000
+Timer : 0, programmed : 5000, actual : 5000
+Timer : 1, programmed : 10000, actual : 10000
+Timer : 2, programmed : 15000, actual : 15000
+Timer : 3, programmed : 20000, actual : 20000
+Timer : 4, programmed : 25000, actual : 25000
+Timer : 5, programmed : 30000, actual : 30000
+Timer : 6, programmed : 35000, actual : 35000
+Timer : 7, programmed : 40000, actual : 40000
+Timer : 8, programmed : 45000, actual : 45000
+Timer : 9, programmed : 50000, actual : 50000
+Timer : 10, programmed : 55000, actual : 55000
+Timer : 11, programmed : 60000, actual : 60000
+Timer : 12, programmed : 65000, actual : 65000
+Timer : 13, programmed : 70000, actual : 70000
+Timer : 14, programmed : 75000, actual : 75000
+Timer : 15, programmed : 80000, actual : 80000
+```
 ---
 ---
+
+### Releases v1.1.1
+
+1. Add example [**Change_Interval**](examples/Change_Interval) and [**ISR_16_Timers_Array_Complex**](examples/ISR_16_Timers_Array_Complex)
+2. Bump up version to sync with other TimerInterrupt Libraries. Modify Version String.
 
 ### Releases v1.0.1
 
