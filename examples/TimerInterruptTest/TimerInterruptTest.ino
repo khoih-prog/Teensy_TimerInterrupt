@@ -1,31 +1,32 @@
 /****************************************************************************************************************************
-   TimerInterruptTest.ino
-   For Teensy boards
-   Written by Khoi Hoang
+  TimerInterruptTest.ino
+  For Teensy boards
+  Written by Khoi Hoang
 
-   Built by Khoi Hoang https://github.com/khoih-prog/Teensy_TimerInterrupt
-   Licensed under MIT license
+  Built by Khoi Hoang https://github.com/khoih-prog/Teensy_TimerInterrupt
+  Licensed under MIT license
 
-   Now even you use all these new 16 ISR-based timers,with their maximum interval practically unlimited (limited only by
-   unsigned long miliseconds), you just consume only one Teensy timer and avoid conflicting with other cores' tasks.
-   The accuracy is nearly perfect compared to software timers. The most important feature is they're ISR-based timers
-   Therefore, their executions are not blocked by bad-behaving functions / tasks.
-   This important feature is absolutely necessary for mission-critical tasks.
+  Now even you use all these new 16 ISR-based timers,with their maximum interval practically unlimited (limited only by
+  unsigned long miliseconds), you just consume only one Teensy timer and avoid conflicting with other cores' tasks.
+  The accuracy is nearly perfect compared to software timers. The most important feature is they're ISR-based timers
+  Therefore, their executions are not blocked by bad-behaving functions / tasks.
+  This important feature is absolutely necessary for mission-critical tasks.
 
-   Based on SimpleTimer - A timer library for Arduino.
-   Author: mromani@ottotecnica.com
-   Copyright (c) 2010 OTTOTECNICA Italy
+  Based on SimpleTimer - A timer library for Arduino.
+  Author: mromani@ottotecnica.com
+  Copyright (c) 2010 OTTOTECNICA Italy
 
-   Based on BlynkTimer.h
-   Author: Volodymyr Shymanskyy
+  Based on BlynkTimer.h
+  Author: Volodymyr Shymanskyy
 
-   Version: 1.1.1
+  Version: 1.2.0
 
-   Version Modified By   Date      Comments
-   ------- -----------  ---------- -----------
-   1.0.0   K Hoang      04/11/2020 Initial coding
-   1.0.1   K Hoang      06/11/2020 Add complicated example ISR_16_Timers_Array using all 16 independent ISR Timers.
-   1.1.1   K.Hoang      06/12/2020 Add complex examples. Bump up version to sync with other TimerInterrupt Libraries
+  Version Modified By   Date      Comments
+  ------- -----------  ---------- -----------
+  1.0.0   K Hoang      04/11/2020 Initial coding
+  1.0.1   K Hoang      06/11/2020 Add complicated example ISR_16_Timers_Array using all 16 independent ISR Timers.
+  1.1.1   K.Hoang      06/12/2020 Add complex examples. Bump up version to sync with other TimerInterrupt Libraries
+  1.2.0   K.Hoang      11/01/2021 Add better debug feature. Optimize code and examples to reduce RAM usage
 *****************************************************************************************************************************/
 /*
    Notes:
@@ -44,9 +45,12 @@
 #endif
 
 
-// These define's must be placed at the beginning before #include "STM32TimerInterrupt.h"
-// Don't define STM32_TEENSY_TEENSY_TIMER_INTERRUPT_DEBUG > 2. Only for special ISR debugging only. Can hang the system.
-#define TEENSY_TIMER_INTERRUPT_DEBUG      1
+// These define's must be placed at the beginning before #include "TeensyTimerInterrupt.h"
+// _TIMERINTERRUPT_LOGLEVEL_ from 0 to 4
+// Don't define _TIMERINTERRUPT_LOGLEVEL_ > 0. Only for special ISR debugging only. Can hang the system.
+// Don't define TIMER_INTERRUPT_DEBUG > 2. Only for special ISR debugging only. Can hang the system.
+#define TIMER_INTERRUPT_DEBUG         0
+#define _TIMERINTERRUPT_LOGLEVEL_     0
 
 #include "TeensyTimerInterrupt.h"
 
@@ -62,7 +66,7 @@
   #define LED_RED           3
 #endif
 
-void TimerHandler0(void)
+void TimerHandler0()
 {
   static bool toggle0 = false;
   static bool started = false;
@@ -99,15 +103,17 @@ void setup()
   
   delay(100);
   
-  Serial.println("\nStarting TimerInterruptTest on " + String(BOARD_NAME));
+  Serial.print(F("\nStarting TimerInterruptTest on ")); Serial.println(BOARD_NAME);
   Serial.println(TEENSY_TIMER_INTERRUPT_VERSION);
-  Serial.println("CPU Frequency = " + String(F_CPU / 1000000) + " MHz");
+  Serial.print(F("CPU Frequency = ")); Serial.print(F_CPU / 1000000); Serial.println(F(" MHz"));
 
   // Interval in microsecs
   if (ITimer0.attachInterruptInterval(TIMER0_INTERVAL_MS * 1000, TimerHandler0))
-    Serial.println("Starting  ITimer0 OK, millis() = " + String(millis()));
+  {
+    Serial.print(F("Starting ITimer0 OK, millis() = ")); Serial.println(millis());
+  }
   else
-    Serial.println("Can't set ITimer0. Select another freq. or timer"); 
+    Serial.println(F("Can't set ITimer0. Select another freq. or timer"));
 }
 
 void loop()
@@ -124,12 +130,12 @@ void loop()
 
     if (timer0Stopped)
     {
-      Serial.println("Start ITimer0, millis() = " + String(currTime));
+      Serial.print(F("Start ITimer0, millis() = ")); Serial.println(currTime);
       ITimer0.restartTimer();
     }
     else
     {
-      Serial.println("Stop ITimer0, millis() = " + String(currTime));
+      Serial.print(F("Stop ITimer0, millis() = ")); Serial.println(currTime);
       ITimer0.stopTimer();
     }
     timer0Stopped = !timer0Stopped;

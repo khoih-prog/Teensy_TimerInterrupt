@@ -1,31 +1,32 @@
 /****************************************************************************************************************************
-   TeensyTimerInterrupt.h
-   For Teensy boards
-   Written by Khoi Hoang
+  TeensyTimerInterrupt.h
+  For Teensy boards
+  Written by Khoi Hoang
 
-   Built by Khoi Hoang https://github.com/khoih-prog/Teensy_TimerInterrupt
-   Licensed under MIT license
+  Built by Khoi Hoang https://github.com/khoih-prog/Teensy_TimerInterrupt
+  Licensed under MIT license
 
-   Now even you use all these new 16 ISR-based timers,with their maximum interval practically unlimited (limited only by
-   unsigned long miliseconds), you just consume only one Teensy timer and avoid conflicting with other cores' tasks.
-   The accuracy is nearly perfect compared to software timers. The most important feature is they're ISR-based timers
-   Therefore, their executions are not blocked by bad-behaving functions / tasks.
-   This important feature is absolutely necessary for mission-critical tasks.
+  Now even you use all these new 16 ISR-based timers,with their maximum interval practically unlimited (limited only by
+  unsigned long miliseconds), you just consume only one Teensy timer and avoid conflicting with other cores' tasks.
+  The accuracy is nearly perfect compared to software timers. The most important feature is they're ISR-based timers
+  Therefore, their executions are not blocked by bad-behaving functions / tasks.
+  This important feature is absolutely necessary for mission-critical tasks.
 
-   Based on SimpleTimer - A timer library for Arduino.
-   Author: mromani@ottotecnica.com
-   Copyright (c) 2010 OTTOTECNICA Italy
+  Based on SimpleTimer - A timer library for Arduino.
+  Author: mromani@ottotecnica.com
+  Copyright (c) 2010 OTTOTECNICA Italy
 
-   Based on BlynkTimer.h
-   Author: Volodymyr Shymanskyy
+  Based on BlynkTimer.h
+  Author: Volodymyr Shymanskyy
 
-   Version: 1.1.1
+  Version: 1.2.0
 
-   Version Modified By   Date      Comments
-   ------- -----------  ---------- -----------
-   1.0.0   K Hoang      04/11/2020 Initial coding
-   1.0.1   K Hoang      06/11/2020 Add complicated example ISR_16_Timers_Array using all 16 independent ISR Timers.
-   1.1.1   K.Hoang      06/12/2020 Add complex examples. Bump up version to sync with other TimerInterrupt Libraries
+  Version Modified By   Date      Comments
+  ------- -----------  ---------- -----------
+  1.0.0   K Hoang      04/11/2020 Initial coding
+  1.0.1   K Hoang      06/11/2020 Add complicated example ISR_16_Timers_Array using all 16 independent ISR Timers.
+  1.1.1   K.Hoang      06/12/2020 Add complex examples. Bump up version to sync with other TimerInterrupt Libraries
+  1.2.0   K.Hoang      11/01/2021 Add better debug feature. Optimize code and examples to reduce RAM usage
 *****************************************************************************************************************************/
 
 #pragma once
@@ -34,12 +35,11 @@
   #error This code is designed to run on Teensy platform! Please check your Tools->Board setting.
 #endif
 
-#define TEENSY_TIMER_INTERRUPT_VERSION       "Teensy_TimerInterrupt v1.1.1"
-
-#ifndef TEENSY_TIMER_INTERRUPT_DEBUG
-  #define TEENSY_TIMER_INTERRUPT_DEBUG       0
+#ifndef TEENSY_TIMER_INTERRUPT_VERSION
+  #define TEENSY_TIMER_INTERRUPT_VERSION       "Teensy_TimerInterrupt v1.2.0"
 #endif
 
+#include "TimerInterrupt_Generic_Debug.h"
 class TeensyTimerInterrupt;
 
 typedef enum
@@ -51,7 +51,7 @@ typedef enum
   
 typedef TeensyTimerInterrupt TeensyTimer;
 
-typedef void (*timerCallback)  (void);
+typedef void (*timerCallback)  ();
 
 
 #if ( defined(__arm__) && defined(TEENSYDUINO) && defined(__IMXRT1062__) )
@@ -64,7 +64,7 @@ typedef void (*timerCallback)  (void);
   #endif
   
 class TeensyTimerInterrupt;
-void ext_isr(void);
+void ext_isr();
 
 // Ony for Teensy 4.0/4.1
 IRQ_NUMBER_t            teensy_timers_irq [TEENSY_MAX_TIMER] = { IRQ_FLEXPWM1_3, IRQ_FLEXPWM2_2 };
@@ -131,11 +131,9 @@ class TeensyTimerInterrupt
       {
           _callback = callback;
       } 
-      else 
+      else
       {
-#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)      
-          Serial.println("TeensyTimerInterrupt: ERROR: NULL callback function pointer.");
-#endif
+          TISR_LOGERROR(F("TeensyTimerInterrupt: ERROR: NULL callback function pointer."));
           
           return false;
       }
@@ -161,27 +159,17 @@ class TeensyTimerInterrupt
       _prescale   = prescale;
       _timerCount = period;
 
-#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
       if (_timer == TEENSY_TIMER_1)
       {
-        Serial.print("TEENSY_TIMER_1");
+        TISR_LOGWARN1(F("TEENSY_TIMER_1: , F_BUS_ACTUAL (MHz) ="), F_BUS_ACTUAL/1000000);
       }
       else if (_timer == TEENSY_TIMER_3)
       {
-        Serial.print("TEENSY_TIMER_3");
+        TISR_LOGWARN1(F("TEENSY_TIMER_3: , F_BUS_ACTUAL (MHz) ="), F_BUS_ACTUAL/1000000);
       }
-      
-      Serial.print(", F_BUS_ACTUAL (MHz) = ");
-      Serial.print(F_BUS_ACTUAL/1000000);
-      Serial.print(", request interval = ");
-      Serial.print(interval);
-      Serial.print(", actual interval (us) = ");
-      Serial.println(_realPeriod);
-      Serial.print("Prescale = ");
-      Serial.print(_prescale);
-      Serial.print(", _timerCount = ");
-      Serial.println(_timerCount);
-#endif
+          
+      TISR_LOGWARN3(F("Request interval ="), interval, F(", actual interval (us) ="), _realPeriod);
+      TISR_LOGWARN3(F("Prescale ="), _prescale, F(", _timerCount ="), _timerCount);
         
       if (_timer == TEENSY_TIMER_1)
       {
@@ -250,7 +238,7 @@ class TeensyTimerInterrupt
       return setInterval(interval, callback);
     }
     
-    void detachInterrupt(void) __attribute__((always_inline))
+    void detachInterrupt() __attribute__((always_inline))
     {     
       NVIC_DISABLE_IRQ(_timer_IRQ);
           
@@ -266,7 +254,7 @@ class TeensyTimerInterrupt
       }   
     }
 
-    void disableTimer(void) __attribute__((always_inline))
+    void disableTimer() __attribute__((always_inline))
     {
       detachInterrupt();
     }
@@ -283,18 +271,16 @@ class TeensyTimerInterrupt
     void stopTimer() __attribute__((always_inline))
     {
       if (_timer == TEENSY_TIMER_1)
-      {
-#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-      Serial.println("TeensyTimerInterrupt:stopTimer TEENSY_TIMER_1");
-#endif            
+      {          
+        TISR_LOGWARN(F("TeensyTimerInterrupt:stopTimer TEENSY_TIMER_1"));
+      
         ///////////// TEENSY_TIMER_1 code ////////////////////////     
         FLEXPWM1_MCTRL &= ~FLEXPWM_MCTRL_RUN(8);
       }
       else if (_timer == TEENSY_TIMER_3)
       {
-#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-      Serial.println("TeensyTimerInterrupt:stopTimer TEENSY_TIMER_3");
-#endif       
+        TISR_LOGWARN(F("TeensyTimerInterrupt:stopTimer TEENSY_TIMER_3"));
+    
         ///////////// TEENSY_TIMER_3 code ////////////////////////
         FLEXPWM2_MCTRL &= ~FLEXPWM_MCTRL_RUN(4);    
       }
@@ -310,17 +296,15 @@ class TeensyTimerInterrupt
       
       if (_timer == TEENSY_TIMER_1)
       {
-#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-      Serial.println("TeensyTimerInterrupt:resumeTimer TEENSY_TIMER_1");
-#endif      
+        TISR_LOGWARN(F("TeensyTimerInterrupt:resumeTimer TEENSY_TIMER_1"));
+      
         ///////////// TEENSY_TIMER_1 code ////////////////////////     
         FLEXPWM1_MCTRL |= FLEXPWM_MCTRL_RUN(8);
       }
       else if (_timer == TEENSY_TIMER_3)
       {
-#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-      Serial.println("TeensyTimerInterrupt:resumeTimer TEENSY_TIMER_3");
-#endif         
+        TISR_LOGWARN(F("TeensyTimerInterrupt:resumeTimer TEENSY_TIMER_3"));
+       
         ///////////// TEENSY_TIMER_3 code ////////////////////////
         FLEXPWM2_MCTRL |= FLEXPWM_MCTRL_RUN(4);  
       }
@@ -342,18 +326,18 @@ class TeensyTimerInterrupt
       return _realPeriod;
     }
   
-    timerCallback getCallback(void) __attribute__((always_inline))
+    timerCallback getCallback() __attribute__((always_inline))
     {
       return _callback;
     }
     
-    IRQ_NUMBER_t getTimerIRQn(void) __attribute__((always_inline))
+    IRQ_NUMBER_t getTimerIRQn() __attribute__((always_inline))
     {
       return _timer_IRQ;
     }
 };
 
-void ext_isr(void)
+void ext_isr()
 {
   if (TeensyTimers[TEENSY_TIMER_1])
   {
@@ -487,11 +471,9 @@ class TeensyTimerInterrupt
       {
           _callback = callback;
       } 
-      else 
+      else
       {
-#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)      
-          Serial.println("TeensyTimerInterrupt: ERROR: NULL callback function pointer.");
-#endif
+          TISR_LOGERROR(F("TeensyTimerInterrupt: ERROR: NULL callback function pointer."));
           
           return false;
       }
@@ -566,27 +548,18 @@ class TeensyTimerInterrupt
 	    _prescale = prescale;
 	    _timerCount = period;
 
-#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
       if (_timer == TEENSY_TIMER_1)
       {
-        Serial.print("TEENSY_TIMER_1");
+        TISR_LOGWARN1(F("TEENSY_TIMER_1: , F_TIMER (MHz) ="), F_TIMER/1000000);
       }
       else if (_timer == TEENSY_TIMER_3)
       {
-        Serial.print("TEENSY_TIMER_3");
+        TISR_LOGWARN1(F("TEENSY_TIMER_3: , F_TIMER (MHz) ="), F_TIMER/1000000);
       }
+          
+      TISR_LOGWARN3(F("Request interval ="), interval, F(", actual interval (us) ="), _realPeriod);
+      TISR_LOGWARN3(F("Prescale ="), _prescale, F(", _timerCount ="), _timerCount);
       
-      Serial.print(", F_TIMER (MHz) = ");
-      Serial.print(F_TIMER/1000000);
-      Serial.print(", request interval = ");
-      Serial.print(interval);
-      Serial.print(", actual interval (us) = ");
-      Serial.println(_realPeriod);
-      Serial.print("Prescale = ");
-      Serial.print(_prescale);
-      Serial.print(", _timerCount = ");
-      Serial.println(_timerCount);
-#endif
 	    
 	    if (_timer == TEENSY_TIMER_1)
       {
@@ -634,7 +607,7 @@ class TeensyTimerInterrupt
       return setInterval(interval, callback);
     }
     
-    void detachInterrupt(void) __attribute__((always_inline))
+    void detachInterrupt() __attribute__((always_inline))
     {     
       NVIC_DISABLE_IRQ(_timer_IRQ);
           
@@ -652,7 +625,7 @@ class TeensyTimerInterrupt
       NVIC_DISABLE_IRQ(_timer_IRQ);
     }
 
-    void disableTimer(void) __attribute__((always_inline))
+    void disableTimer() __attribute__((always_inline))
     {
       detachInterrupt();
     }
@@ -666,17 +639,15 @@ class TeensyTimerInterrupt
       
       if (_timer == TEENSY_TIMER_1)
       {
-#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-        Serial.println("TeensyTimerInterrupt:startTimer TEENSY_TIMER_1");
-#endif            
+        TISR_LOGWARN(F("TeensyTimerInterrupt:startTimer TEENSY_TIMER_1"));
+           
         ///////////// TEENSY_TIMER_1 code ////////////////////////     
         FTM1_CNT = 0;
       }
       else if (_timer == TEENSY_TIMER_3)
       {
-#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-        Serial.println("TeensyTimerInterrupt:startTimer TEENSY_TIMER_3");
-#endif       
+        TISR_LOGWARN(F("TeensyTimerInterrupt:startTimer TEENSY_TIMER_3"));
+      
         ///////////// TEENSY_TIMER_3 code ////////////////////////
         FTM2_CNT = 0;
       }
@@ -688,17 +659,15 @@ class TeensyTimerInterrupt
     {
       if (_timer == TEENSY_TIMER_1)
       {
-#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-        Serial.println("TeensyTimerInterrupt:stopTimer TEENSY_TIMER_1");
-#endif            
+        TISR_LOGWARN(F("TeensyTimerInterrupt:stopTimer TEENSY_TIMER_1"));
+            
         ///////////// TEENSY_TIMER_1 code ////////////////////////     
         FTM1_SC = FTM1_SC & (FTM_SC_TOIE | FTM_SC_CPWMS | FTM_SC_PS(7));
       }
       else if (_timer == TEENSY_TIMER_3)
       {
-#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-        Serial.println("TeensyTimerInterrupt:stopTimer TEENSY_TIMER_3");
-#endif       
+        TISR_LOGWARN(F("TeensyTimerInterrupt:stopTimer TEENSY_TIMER_3"));
+    
         ///////////// TEENSY_TIMER_3 code ////////////////////////
         FTM2_SC = FTM2_SC & (FTM_SC_TOIE | FTM_SC_CPWMS | FTM_SC_PS(7));  
       }
@@ -714,21 +683,20 @@ class TeensyTimerInterrupt
       
       if (_timer == TEENSY_TIMER_1)
       {
-#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-        Serial.println("TeensyTimerInterrupt:resumeTimer TEENSY_TIMER_1");
-#endif      
+        TISR_LOGWARN(F("TeensyTimerInterrupt:resumeTimer TEENSY_TIMER_1"));
+     
         ///////////// TEENSY_TIMER_1 code ////////////////////////     
         FTM1_SC = (FTM1_SC & (FTM_SC_TOIE | FTM_SC_PS(7))) | FTM_SC_CPWMS | FTM_SC_CLKS(1);
       }
       else if (_timer == TEENSY_TIMER_3)
       {
-#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-        Serial.println("TeensyTimerInterrupt:resumeTimer TEENSY_TIMER_3");
-#endif         
+        TISR_LOGWARN(F("TeensyTimerInterrupt:resumeTimer TEENSY_TIMER_3"));
+        
         ///////////// TEENSY_TIMER_3 code ////////////////////////
         FTM2_SC = (FTM2_SC & (FTM_SC_TOIE | FTM_SC_PS(7))) | FTM_SC_CPWMS | FTM_SC_CLKS(1);
       }
     }
+
 
     uint32_t getPeriod() __attribute__((always_inline))
     {
@@ -746,19 +714,19 @@ class TeensyTimerInterrupt
       return _realPeriod;
     }
    
-    timerCallback getCallback(void) __attribute__((always_inline))
+    timerCallback getCallback() __attribute__((always_inline))
     {
       return _callback;
     }
     
-    IRQ_NUMBER_t getTimerIRQn(void) __attribute__((always_inline))
+    IRQ_NUMBER_t getTimerIRQn() __attribute__((always_inline))
     {
       return _timer_IRQ;
     }
 };
 
 
-void ftm1_isr(void)
+void ftm1_isr()
 {
   uint32_t sc = FTM1_SC;
   
@@ -774,7 +742,7 @@ void ftm1_isr(void)
 }
 
 
-void ftm2_isr(void)
+void ftm2_isr()
 {
   uint32_t sc = FTM2_SC;
   
@@ -876,9 +844,7 @@ class TeensyTimerInterrupt
       } 
       else 
       {
-#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)      
-          Serial.println("TeensyTimerInterrupt: ERROR: NULL callback function pointer.");
-#endif
+          TISR_LOGERROR(F("TeensyTimerInterrupt: ERROR: NULL callback function pointer."));
           
           return false;
       }
@@ -963,27 +929,17 @@ class TeensyTimerInterrupt
 	    _prescale   = prescale;
 	    _timerCount = period;
 
-#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
       if (_timer == TEENSY_TIMER_1)
       {
-        Serial.print("TEENSY_TIMER_1");
+        TISR_LOGWARN1(F("TEENSY_TIMER_1: , F_CPU (MHz) ="), F_CPU/1000000);
       }
       else if (_timer == TEENSY_TIMER_3)
       {
-        Serial.print("TEENSY_TIMER_3");
+        TISR_LOGWARN1(F("TEENSY_TIMER_3: , F_CPU (MHz) ="), F_CPU/1000000);
       }
-      
-      Serial.print(", F_CPU (MHz) = ");
-      Serial.print(F_CPU/1000000);
-      Serial.print(", request interval = ");
-      Serial.print(interval);
-      Serial.print(", actual interval (us) = ");
-      Serial.println(_realPeriod);
-      Serial.print("Prescale = ");
-      Serial.print(_prescale);
-      Serial.print(", _timerCount = ");
-      Serial.println(_timerCount);
-#endif
+          
+      TISR_LOGWARN3(F("Request interval ="), interval, F(", actual interval (us) ="), _realPeriod);
+      TISR_LOGWARN3(F("Prescale ="), _prescale, F(", _timerCount ="), _timerCount);
 	    
 	    // Interrupt attach and enable code
 	    if (_timer == TEENSY_TIMER_1)
@@ -1012,7 +968,7 @@ class TeensyTimerInterrupt
       return setInterval(interval, callback);
     }
     
-    void detachInterrupt(void) __attribute__((always_inline))
+    void detachInterrupt() __attribute__((always_inline))
     {              
       if (_timer == TEENSY_TIMER_1)
       {
@@ -1026,7 +982,7 @@ class TeensyTimerInterrupt
       }
     }
 
-    void disableTimer(void) __attribute__((always_inline))
+    void disableTimer() __attribute__((always_inline))
     {
       detachInterrupt();
     }
@@ -1038,18 +994,16 @@ class TeensyTimerInterrupt
     {     
       if (_timer == TEENSY_TIMER_1)
       {
-#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-        Serial.println("TeensyTimerInterrupt:startTimer TEENSY_TIMER_1");
-#endif            
+        TISR_LOGWARN(F("TeensyTimerInterrupt:startTimer TEENSY_TIMER_1"));
+            
         ///////////// TEENSY_TIMER_1 code ////////////////////////     
         TCCR1B  = 0;
 	      TCNT1   = 0;
       }
       else if (_timer == TEENSY_TIMER_3)
       {
-#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-        Serial.println("TeensyTimerInterrupt:startTimer TEENSY_TIMER_3");
-#endif       
+        TISR_LOGWARN(F("TeensyTimerInterrupt:startTimer TEENSY_TIMER_3"));
+      
         ///////////// TEENSY_TIMER_3 code ////////////////////////
         TCCR3B  = 0;
 	      TCNT3   = 0;
@@ -1062,17 +1016,15 @@ class TeensyTimerInterrupt
     {
       if (_timer == TEENSY_TIMER_1)
       {
-#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-        Serial.println("TeensyTimerInterrupt:stopTimer TEENSY_TIMER_1");
-#endif            
+        TISR_LOGWARN(F("TeensyTimerInterrupt:stopTimer TEENSY_TIMER_1"));
+          
         ///////////// TEENSY_TIMER_1 code ////////////////////////     
         TCCR1B = _BV(WGM13);
       }
       else if (_timer == TEENSY_TIMER_3)
       {
-#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-        Serial.println("TeensyTimerInterrupt:stopTimer TEENSY_TIMER_3");
-#endif       
+        TISR_LOGWARN(F("TeensyTimerInterrupt:stopTimer TEENSY_TIMER_3"));
+      
         ///////////// TEENSY_TIMER_3 code ////////////////////////
         TCCR3B = _BV(WGM33);
       }
@@ -1088,17 +1040,15 @@ class TeensyTimerInterrupt
       
       if (_timer == TEENSY_TIMER_1)
       {
-#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-        Serial.println("TeensyTimerInterrupt:resumeTimer TEENSY_TIMER_1");
-#endif      
+        TISR_LOGWARN(F("TeensyTimerInterrupt:resumeTimer TEENSY_TIMER_1"));
+   
         ///////////// TEENSY_TIMER_1 code ////////////////////////     
         TCCR1B = _BV(WGM13) | _prescale;
       }
       else if (_timer == TEENSY_TIMER_3)
       {
-#if (TEENSY_TIMER_INTERRUPT_DEBUG > 0)
-        Serial.println("TeensyTimerInterrupt:resumeTimer TEENSY_TIMER_3");
-#endif         
+        TISR_LOGWARN(F("TeensyTimerInterrupt:resumeTimer TEENSY_TIMER_3"));
+        
         ///////////// TEENSY_TIMER_3 code ////////////////////////
         TCCR3B = _BV(WGM33) | _prescale;
       }
@@ -1120,7 +1070,7 @@ class TeensyTimerInterrupt
       return _realPeriod;
     }
    
-    timerCallback getCallback(void) __attribute__((always_inline))
+    timerCallback getCallback() __attribute__((always_inline))
     {
       return _callback;
     }

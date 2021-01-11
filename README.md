@@ -9,9 +9,82 @@
 ---
 ---
 
-## Features
+## Table of Contents
 
-This library enables you to use Interrupt from Hardware Timers on an Teensy-based board, such as Teensy 4.x, 3.x, LC, Teensy++ 2.0 or Teensy 2.0. As **Hardware Timers are rare, and very precious assets** of any board, this library now enable you to use up to **16 ISR-based Timers, while consuming only 1 Hardware Timer**. Timers' interval is very long (**ulong millisecs**). 
+* [Why do we need this Teensy_TimerInterrupt library](#why-do-we-need-this-teensy_timerinterrupt-library)
+  * [Features](#features)
+  * [Why using ISR-based Hardware Timer Interrupt is better](#why-using-isr-based-hardware-timer-interrupt-is-better)
+  * [Currently supported Boards](#currently-supported-boards)
+  * [Important Notes about ISR](#important-notes-about-isr)
+* [Changelog](#changelog)
+  * [Releases v1.2.0](#releases-v120)
+  * [Releases v1.1.1](#releases-v111)
+  * [Releases v1.0.1](#releases-v101)
+  * [Releases v1.0.0](#releases-v100)
+* [Prerequisites](#prerequisites)
+* [Installation](#installation)
+  * [Use Arduino Library Manager](#use-arduino-library-manager)
+  * [Manual Install](#manual-install)
+  * [VS Code & PlatformIO](#vs-code--platformio)
+* [Packages' Patches](#packages-patches)
+  * [1. For Teensy boards](#1-for-teensy-boards)
+* [Libraries' Patches](#libraries-patches)
+  * [1. For application requiring 2K+ HTML page](#1-for-application-requiring-2k-html-page)
+  * [2. For Ethernet library](#2-for-ethernet-library)
+  * [3. For EthernetLarge library](#3-for-ethernetlarge-library)
+  * [4. For Etherne2 library](#4-for-ethernet2-library)
+  * [5. For Ethernet3 library](#5-for-ethernet3-library)
+  * [6. For UIPEthernet library](#6-for-uipethernet-library)
+* [HOWTO Fix `Multiple Definitions` Linker Error](#howto-fix-multiple-definitions-linker-error)
+* [New from v1.0.0](#new-from-v100)
+* [Usage](#usage)
+  * [1. Using only Hardware Timer directly](#1-using-only-hardware-timer-directly)
+    * [1.1 Init Hardware Timer](#11-init-hardware-timer)
+    * [1.2 Set Hardware Timer Interval and attach Timer Interrupt Handler function](#12-set-hardware-timer-interval-and-attach-timer-interrupt-handler-function)
+    * [1.3 Set Hardware Timer Frequency and attach Timer Interrupt Handler function](#13-set-hardware-timer-frequency-and-attach-timer-interrupt-handler-function)
+  * [2. Using 16 ISR_based Timers from 1 Hardware Timer](#2-using-16-isr_based-timers-from-1-hardware-timer)
+    * [2.1 Important Note](#21-important-note)
+    * [2.2 Init Hardware Timer and ISR-based Timer](#22-init-hardware-timer-and-isr-based-timer)
+    * [2.3 Set Hardware Timer Interval and attach Timer Interrupt Handler functions](#23-set-hardware-timer-interval-and-attach-timer-interrupt-handler-functions)
+* [Examples](#examples)
+  * [  1. Argument_None](examples/Argument_None)
+  * [  2. ISR_16_Timers_Array](examples/ISR_16_Timers_Array)
+  * [  3. ISR_RPM_Measure](examples/ISR_RPM_Measure)
+  * [  4. ISR_Timer_Complex](examples/ISR_Timer_Complex)
+  * [  5. RPM_Measure](examples/RPM_Measure)
+  * [  6. SwitchDebounce](examples/SwitchDebounce)
+  * [  7. TimerInterruptTest](examples/TimerInterruptTest)
+  * [  8. TimerInterruptLEDDemo](examples/TimerInterruptLEDDemo)
+  * [  9. **Change_Interval**](examples/Change_Interval)
+  * [ 10. **ISR_16_Timers_Array_Complex**](examples/ISR_16_Timers_Array_Complex)
+* [Example ISR_16_Timers_Array_Complex](#example-isr_16_timers_array_complex)
+* [Debug Terminal Output Samples](#debug-terminal-output-samples)
+  * [1. ISR_16_Timers_Array on Teensy 4.1](#1-isr_16_timers_array-on-teensy-41)
+  * [2. TimerInterruptTest on Teensy 4.1](#2-timerinterrupttest-on-teensy-41)
+  * [3. Argument_None on Teensy 4.1](#3-argument_none-on-teensy-41)
+  * [4. Change_Interval on Teensy 4.1](#4-change_interval-on-teensy-41)
+  * [5. ISR_16_Timers_Array_Complex on Teensy 4.1](#5-isr_16_timers_array_complex-on-teensy-41)
+* [Debug](#debug)
+* [Troubleshooting](#troubleshooting)
+* [Releases](#releases)
+* [Issues](#issues)
+* [TO DO](#to-do)
+* [DONE](#done)
+* [Contributions and Thanks](#contributions-and-thanks)
+* [Contributing](#contributing)
+* [License](#license)
+* [Copyright](#copyright)
+
+---
+---
+
+### Why do we need this [Teensy_TimerInterrupt library](https://github.com/khoih-prog/Teensy_TimerInterrupt)
+
+### Features
+
+This library enables you to use Interrupt from Hardware Timers on an Teensy-based board, such as Teensy 4.x, 3.x, LC, Teensy++ 2.0 or Teensy 2.0. 
+
+As **Hardware Timers are rare, and very precious assets** of any board, this library now enable you to use up to **16 ISR-based Timers, while consuming only 1 Hardware Timer**. Timers' interval is very long (**ulong millisecs**). 
 
 You'd certainly experienced that if using other Hardware Timer Libraries, such as [**TimerOne**](https://github.com/PaulStoffregen/TimerOne) or [**TimerThree**](https://github.com/PaulStoffregen/TimerThree), the interval is short, in milliseconds range.
 
@@ -19,11 +92,24 @@ For example, Teensy 4.x, with **super-high clock frequency of 600MHz and Timer1 
 
 For Teensy 4.x, this library will be expanded to use other available hardware timers, such as **FTM, GPT, QUAD, PIT**, in addition to current **Timer1 and Timer3**.
 
-### Why do we need this Hardware Timer Interrupt?
+Now with these new **16 ISR-based timers**, the maximum interval is **practically unlimited** (limited only by unsigned long miliseconds) while **the accuracy is nearly perfect** compared to software timers. 
+
+The most important feature is they're ISR-based timers. Therefore, their executions are **not blocked by bad-behaving functions / tasks**. This important feature is absolutely necessary for mission-critical tasks. 
+
+The [**ISR_Timer_Complex**](examples/ISR_Timer_Complex) example will demonstrate the nearly perfect accuracy compared to software timers by printing the actual elapsed millisecs of each type of timers.
+
+Being ISR-based timers, their executions are not blocked by bad-behaving functions / tasks, such as connecting to WiFi, Internet and Blynk services. You can also have many `(up to 16)` timers to use.
+
+This non-being-blocked important feature is absolutely necessary for mission-critical tasks.
+
+You'll see blynkTimer Software is blocked while system is connecting to WiFi / Internet / Blynk, as well as by blocking task 
+in loop(), using delay() function as an example. The elapsed time then is very unaccurate
+
+### Why using ISR-based Hardware Timer Interrupt is better
 
 Imagine you have a system with a **mission-critical** function, measuring water level and control the sump pump or doing something much more important. You normally use a software timer to poll, or even place the function in loop(). But what if another function is **blocking** the loop() or setup().
 
-So your function **might not be executed on-time or not at all, and the result would be disastrous.**
+So your function **might not be executed, and the result would be disastrous.**
 
 You'd prefer to have your function called, no matter what happening with other functions (busy loop, bug, etc.).
 
@@ -39,7 +125,18 @@ The catch is **your function is now part of an ISR (Interrupt Service Routine), 
 
 ---
 
-#### Important Notes:
+### Currently supported Boards
+
+1. **Teensy boards** such as :
+
+  - **Teensy 4.1, 4.0**
+  - **Teensy 3.6, 3.5, 3.2/3.1, 3.0**
+  - **Teensy LC**
+  - **Teensy++ 2.0 and Teensy 2.0**
+
+---
+
+### Important Notes about ISR
 
 1. Inside the attached function, **delay() won’t work and the value returned by millis() will not increment.** Serial data received while in the function may be lost. You should declare as **volatile any variables that you modify within the attached function.**
 
@@ -47,6 +144,14 @@ The catch is **your function is now part of an ISR (Interrupt Service Routine), 
 
 ---
 ---
+
+## Changelog
+
+### Releases v1.2.0
+
+1. Add better debug feature.
+2. Optimize code and examples to reduce RAM usage
+3. Add Table of Contents
 
 ### Releases v1.1.1
 
@@ -61,16 +166,7 @@ The catch is **your function is now part of an ISR (Interrupt Service Routine), 
 
 1. Permit up to 16 super-long-time, super-accurate ISR-based timers to avoid being blocked
 2. Using cpp code besides Impl.h code to use if Multiple-Definition linker error.
-
-#### Supported Boards
-
-1. **Teensy boards** such as :
-
-  - **Teensy 4.1, 4.0**
-  - **Teensy 3.6, 3.5, 3.2/3.1, 3.0**
-  - **Teensy LC**
-  - **Teensy++ 2.0 and Teensy 2.0**
-  
+ 
 ---
 ---
 
@@ -104,8 +200,97 @@ Another way to install is to:
 
 1. Install [VS Code](https://code.visualstudio.com/)
 2. Install [PlatformIO](https://platformio.org/platformio-ide)
-3. Install [**Teensy_TimerInterrupt** library](https://platformio.org/lib/show/11404/Teensy_TimerInterrupt) or [**Teensy_TimerInterrupt** library](https://platformio.org/lib/show/11404/Teensy_TimerInterrupt) by using [Library Manager](https://platformio.org/lib/show/11426/Teensy_TimerInterrupt/installation). Search for **Teensy_TimerInterrupt** in [Platform.io Author's Libraries](https://platformio.org/lib/search?query=author:%22Khoi%20Hoang%22)
+3. Install [**Teensy_TimerInterrupt** library](https://platformio.org/lib/show/11426/Teensy_TimerInterrupt) or [**Teensy_TimerInterrupt** library](https://platformio.org/lib/show/11404/Teensy_TimerInterrupt) by using [Library Manager](https://platformio.org/lib/show/11426/Teensy_TimerInterrupt/installation). Search for **Teensy_TimerInterrupt** in [Platform.io Author's Libraries](https://platformio.org/lib/search?query=author:%22Khoi%20Hoang%22)
 4. Use included [platformio.ini](platformio/platformio.ini) file from examples to ensure that all dependent libraries will installed automatically. Please visit documentation for the other options and examples at [Project Configuration File](https://docs.platformio.org/page/projectconf.html)
+
+---
+---
+
+### Packages' Patches
+
+#### 1. For Teensy boards
+ 
+ **To be able to compile and run on Teensy boards**, you have to copy the file [Teensy boards.txt](Packages_Patches/hardware/teensy/avr/boards.txt) into Teensy hardware directory (./arduino-1.8.13/hardware/teensy/avr/boards.txt). 
+
+Supposing the Arduino version is 1.8.13. This file must be copied into the directory:
+
+- `./arduino-1.8.13/hardware/teensy/avr/boards.txt`
+- `./arduino-1.8.13/hardware/teensy/avr/cores/teensy3/Stream.h`
+- `./arduino-1.8.13/hardware/teensy/avr/cores/teensy4/Stream.h`
+
+Whenever a new version is installed, remember to copy this file into the new version directory. For example, new version is x.yy.zz
+This file must be copied into the directory:
+
+- `./arduino-x.yy.zz/hardware/teensy/avr/boards.txt`
+- `./arduino-x.yy.zz/hardware/teensy/avr/cores/teensy3/Stream.h`
+- `./arduino-x.yy.zz/hardware/teensy/avr/cores/teensy4/Stream.h`
+
+---
+---
+
+### Libraries' Patches
+
+#### Notes: These patches are totally optional and necessary only when you use the related Ethernet library and get certain error or issues.
+
+#### 1. For application requiring 2K+ HTML page
+
+If your application requires 2K+ HTML page, the current [`Ethernet library`](https://www.arduino.cc/en/Reference/Ethernet) must be modified if you are using W5200/W5500 Ethernet shields. W5100 is not supported for 2K+ buffer. If you use boards requiring different CS/SS pin for W5x00 Ethernet shield, for example ESP32, ESP8266, nRF52, etc., you also have to modify the following libraries to be able to specify the CS/SS pin correctly.
+
+#### 2. For Ethernet library
+
+To fix [`Ethernet library`](https://www.arduino.cc/en/Reference/Ethernet), just copy these following files into the [`Ethernet library`](https://www.arduino.cc/en/Reference/Ethernet) directory to overwrite the old files:
+- [Ethernet.h](LibraryPatches/Ethernet/src/Ethernet.h)
+- [Ethernet.cpp](LibraryPatches/Ethernet/src/Ethernet.cpp)
+- [EthernetServer.cpp](LibraryPatches/Ethernet/src/EthernetServer.cpp)
+- [w5100.h](LibraryPatches/Ethernet/src/utility/w5100.h)
+- [w5100.cpp](LibraryPatches/Ethernet/src/utility/w5100.cpp)
+
+#### 3. For EthernetLarge library
+
+To fix [`EthernetLarge library`](https://github.com/OPEnSLab-OSU/EthernetLarge), just copy these following files into the [`EthernetLarge library`](https://github.com/OPEnSLab-OSU/EthernetLarge) directory to overwrite the old files:
+- [EthernetLarge.h](LibraryPatches/EthernetLarge/src/EthernetLarge.h)
+- [EthernetLarge.cpp](LibraryPatches/EthernetLarge/src/EthernetLarge.cpp)
+- [EthernetServer.cpp](LibraryPatches/EthernetLarge/src/EthernetServer.cpp)
+- [w5100.h](LibraryPatches/EthernetLarge/src/utility/w5100.h)
+- [w5100.cpp](LibraryPatches/EthernetLarge/src/utility/w5100.cpp)
+
+
+#### 4. For Ethernet2 library
+
+To fix [`Ethernet2 library`](https://github.com/khoih-prog/Ethernet2), just copy these following files into the [`Ethernet2 library`](https://github.com/khoih-prog/Ethernet2) directory to overwrite the old files:
+
+- [Ethernet2.h](LibraryPatches/Ethernet2/src/Ethernet2.h)
+- [Ethernet2.cpp](LibraryPatches/Ethernet2/src/Ethernet2.cpp)
+
+To add UDP Multicast support, necessary for the [**UPnP_Generic library**](https://github.com/khoih-prog/UPnP_Generic):
+
+- [EthernetUdp2.h](LibraryPatches/Ethernet2/src/EthernetUdp2.h)
+- [EthernetUdp2.cpp](LibraryPatches/Ethernet2/src/EthernetUdp2.cpp)
+
+#### 5. For Ethernet3 library
+
+5. To fix [`Ethernet3 library`](https://github.com/sstaub/Ethernet3), just copy these following files into the [`Ethernet3 library`](https://github.com/sstaub/Ethernet3) directory to overwrite the old files:
+- [Ethernet3.h](LibraryPatches/Ethernet3/src/Ethernet3.h)
+- [Ethernet3.cpp](LibraryPatches/Ethernet3/src/Ethernet3.cpp)
+
+#### 6. For UIPEthernet library
+
+***To be able to compile and run on nRF52 boards with ENC28J60 using UIPEthernet library***, you have to copy these following files into the UIPEthernet `utility` directory to overwrite the old files:
+
+- For [UIPEthernet v2.0.8](https://github.com/UIPEthernet/UIPEthernet)
+
+  - [UIPEthernet.h](LibraryPatches/UIPEthernet/UIPEthernet.h)
+  - [UIPEthernet.cpp](LibraryPatches/UIPEthernet/UIPEthernet.cpp)
+  - [Enc28J60Network.h](LibraryPatches/UIPEthernet/utility/Enc28J60Network.h)
+  - [Enc28J60Network.cpp](LibraryPatches/UIPEthernet/utility/Enc28J60Network.cpp)
+
+- For [UIPEthernet v2.0.9](https://github.com/UIPEthernet/UIPEthernet)
+
+  - [UIPEthernet.h](LibraryPatches/UIPEthernet-2.0.9/UIPEthernet.h)
+  - [UIPEthernet.cpp](LibraryPatches/UIPEthernet-2.0.9/UIPEthernet.cpp)
+  - [Enc28J60Network.h](LibraryPatches/UIPEthernet-2.0.9/utility/Enc28J60Network.h)
+  - [Enc28J60Network.cpp](LibraryPatches/UIPEthernet-2.0.9/utility/Enc28J60Network.cpp)
+
 
 ---
 ---
@@ -153,16 +338,6 @@ You'll see blynkTimer Software is blocked while system is connecting to WiFi / I
 in loop(), using delay() function as an example. The elapsed time then is very unaccurate
 
 ---
-
-## Supported Boards
-
-1. **Teensy boards** such as :
-
-  - **Teensy 4.1, 4.0**
-  - **Teensy 3.6, 3.5, 3.2/3.1, 3.0**
-  - **Teensy LC**
-  - **Teensy++ 2.0 and Teensy 2.0**
-
 ---
 
 ## Usage
@@ -182,6 +357,20 @@ TeensyTimer ITimer0(TEENSY_TIMER_1);
 
 #### 1.2 Set Hardware Timer Interval and attach Timer Interrupt Handler function
 
+Use one of these functions with **interval in unsigned long milliseconds**
+
+```
+// Interval (in microseconds)
+// For Teensy 4.0/4.1, F_BUS_ACTUAL = 150 MHz => max interval/period is only 55922 us (~17.9 Hz)
+bool setInterval(unsigned long interval, timerCallback callback);
+
+// interval (in microseconds) and duration (in milliseconds). Duration = 0 or not specified => run indefinitely
+// No params and duration now. To be added in the future by adding similar functions here or to NRF52-hal-timer.c
+bool attachInterruptInterval(unsigned long interval, timerCallback callback);
+```
+
+as follows
+
 ```
 void TimerHandler0(void)
 {
@@ -197,16 +386,59 @@ void setup()
   
   // Interval in microsecs
   if (ITimer0.attachInterruptInterval(TIMER0_INTERVAL_MS * 1000, TimerHandler0))
-    Serial.println("Starting  ITimer0 OK, millis() = " + String(millis()));
+  {
+    Serial.print(F("Starting ITimer0 OK, millis() = ")); Serial.println(millis());
+  }
   else
-    Serial.println("Can't set ITimer0. Select another freq. or timer");
+    Serial.println(F("Can't set ITimer0. Select another freq. or timer));
 }  
 ```
 
-### 2. Using 16 ISR_based Timers from 1 Hardware Timers
+### 1.3 Set Hardware Timer Frequency and attach Timer Interrupt Handler function
 
+Use one of these functions with **frequency in float Hz**
 
-#### 2.1 Init Hardware Timer and ISR-based Timer
+```
+// frequency (in hertz) and duration (in milliseconds). Duration = 0 or not specified => run indefinitely
+// No params and duration now. To be added in the future by adding similar functions here or to NRF52-hal-timer.c
+bool setFrequency(float frequency, timerCallback callback);
+
+// frequency (in hertz).
+bool attachInterrupt(float frequency, timerCallback callback);
+```
+
+as follows
+
+```
+void TimerHandler0(void)
+{
+  // Doing something here inside ISR
+}
+
+// For Teensy 4.0/4.1, F_BUS_ACTUAL = 150 MHz => max period is only 55922 us (~17.9 Hz)
+#define TIMER0_FREQ_HZ        5555.555
+
+void setup()
+{
+  ....
+  
+  // Interval in microsecs
+  if (ITimer0.attachInterrupt(TIMER0_FREQ_HZ, TimerHandler0))
+  {
+    Serial.print(F("Starting ITimer0 OK, millis() = ")); Serial.println(millis());
+  }
+  else
+    Serial.println(F("Can't set ITimer0. Select another freq. or timer));
+}  
+```
+
+### 2. Using 16 ISR_based Timers from 1 Hardware Timer
+
+### 2.1 Important Note
+
+The 16 ISR_based Timers, designed for long timer intervals, only support using **unsigned long millisec intervals**. If you have to use much higher frequency or sub-millisecond interval, you have to use the Hardware Timers directly as in [1.3 Set Hardware Timer Frequency and attach Timer Interrupt Handler function](#13-set-hardware-timer-frequency-and-attach-timer-interrupt-handler-function)
+
+#### 2.2 Init Hardware Timer and ISR-based Timer
 
 ```
 // You can select Teensy Hardware Timer  from TEENSY_TIMER_1 or TEENSY_TIMER_3
@@ -219,7 +451,7 @@ TeensyTimer ITimer(TEENSY_TIMER_1);
 Teensy_ISR_Timer ISR_Timer;
 ```
 
-#### 2.2 Set Hardware Timer Interval and attach Timer Interrupt Handler functions
+#### 2.3 Set Hardware Timer Interval and attach Timer Interrupt Handler functions
 
 ```
 void TimerHandler(void)
@@ -262,13 +494,12 @@ void setup()
   ....
   
   // Interval in microsecs
-  if (ITimer.attachInterruptInterval(HW_TIMER_INTERVAL_MS * 1000, TimerHandler))
+  if (ITimer0.attachInterruptInterval(TIMER0_INTERVAL_MS * 1000, TimerHandler0))
   {
-    lastMillis = millis();
-    Serial.println("Starting  ITimer OK, millis() = " + String(lastMillis));
+    Serial.print(F("Starting ITimer0 OK, millis() = ")); Serial.println(millis());
   }
   else
-    Serial.println("Can't set ITimer correctly. Select another freq. or interval");
+    Serial.println(F("Can't set ITimer0. Select another freq. or timer));
 
   // Just to demonstrate, don't use too many ISR Timers if not absolutely necessary
   // You can use up to 16 timer for each ISR_Timer
@@ -308,8 +539,11 @@ void setup()
 #endif
 
 // These define's must be placed at the beginning before #include "TeensyTimerInterrupt.h"
-// Don't define Teensy_TEENSY_TIMER_INTERRUPT_DEBUG > 2. Only for special ISR debugging only. Can hang the system.
-#define TEENSY_TIMER_INTERRUPT_DEBUG      1
+// _TIMERINTERRUPT_LOGLEVEL_ from 0 to 4
+// Don't define _TIMERINTERRUPT_LOGLEVEL_ > 0. Only for special ISR debugging only. Can hang the system.
+// Don't define TIMER_INTERRUPT_DEBUG > 2. Only for special ISR debugging only. Can hang the system.
+#define TIMER_INTERRUPT_DEBUG         0
+#define _TIMERINTERRUPT_LOGLEVEL_     0
 
 #include "TeensyTimerInterrupt.h"
 #include "Teensy_ISR_Timer.h"
@@ -343,7 +577,7 @@ Teensy_ISR_Timer ISR_Timer;
 
 #define LED_TOGGLE_INTERVAL_MS        2000L
 
-void TimerHandler(void)
+void TimerHandler()
 {
   static bool toggle  = false;
   static int timeRun  = 0;
@@ -365,7 +599,7 @@ void TimerHandler(void)
 
 #define NUMBER_ISR_TIMERS         16
 
-typedef void (*irqCallback)  (void);
+typedef void (*irqCallback)  ();
 
 /////////////////////////////////////////////////
 
@@ -552,14 +786,20 @@ void simpleTimerDoingSomething2s()
 
   unsigned long currMillis = millis();
 
-  Serial.printf("SimpleTimer : %lus, ms = %lu, Dms : %lu\n", SIMPLE_TIMER_MS / 1000, currMillis, currMillis - previousMillis);
+  Serial.print(F("SimpleTimer : "));Serial.print(SIMPLE_TIMER_MS / 1000);
+  Serial.print(F(", ms : ")); Serial.print(currMillis);
+  Serial.print(F(", Dms : ")); Serial.println(currMillis - previousMillis);
 
-  for (int i = 0; i < NUMBER_ISR_TIMERS; i++)
+  for (uint16_t i = 0; i < NUMBER_ISR_TIMERS; i++)
   {
 #if USE_COMPLEX_STRUCT    
-    Serial.printf("Timer : %d, programmed : %lu, actual : %lu\n", i, curISRTimerData[i].TimerInterval, curISRTimerData[i].deltaMillis);
+    Serial.print(F("Timer : ")); Serial.print(i);
+    Serial.print(F(", programmed : ")); Serial.print(curISRTimerData[i].TimerInterval);
+    Serial.print(F(", actual : ")); Serial.println(curISRTimerData[i].deltaMillis);
 #else
-    Serial.printf("Timer : %d, programmed : %lu, actual : %lu\n", i, TimerInterval[i], deltaMillis[i]);
+    Serial.print(F("Timer : ")); Serial.print(i);
+    Serial.print(F(", programmed : ")); Serial.print(TimerInterval[i]);
+    Serial.print(F(", actual : ")); Serial.println(deltaMillis[i]);
 #endif    
   }
 
@@ -573,22 +813,24 @@ void setup()
   Serial.begin(115200);
   while (!Serial);
 
-  Serial.println("\nStarting ISR_16_Timers_Array_Complex on " + String(BOARD_NAME));
+  delay(100);
+  
+  Serial.print(F("\nStarting ISR_16_Timers_Array_Complex on ")); Serial.println(BOARD_NAME);
   Serial.println(TEENSY_TIMER_INTERRUPT_VERSION);
-  Serial.println("CPU Frequency = " + String(F_CPU / 1000000) + " MHz");
+  Serial.print(F("CPU Frequency = ")); Serial.print(F_CPU / 1000000); Serial.println(F(" MHz"));
 
   // Interval in microsecs
   if (ITimer.attachInterruptInterval(HW_TIMER_INTERVAL_US, TimerHandler))
   {
     startMillis = millis();
-    Serial.printf("Starting  ITimer OK, millis() = %ld\n", startMillis);
+    Serial.print(F("Starting ITimer0 OK, millis() = ")); Serial.println(startMillis);
   }
   else
-    Serial.println("Can't set ITimer correctly. Select another freq. or interval");
+    Serial.println(F("Can't set ITimer0. Select another freq. or timer"));
 
   // Just to demonstrate, don't use too many ISR Timers if not absolutely necessary
-  // You can use up to 16 timer for each ISR_Timer
-  for (int i = 0; i < NUMBER_ISR_TIMERS; i++)
+  // You can use up to 16 timer for each Teensy_ISR_Timer
+  for (uint16_t i = 0; i < NUMBER_ISR_TIMERS; i++)
   {
 #if USE_COMPLEX_STRUCT
     curISRTimerData[i].previousMillis = startMillis;
@@ -623,7 +865,9 @@ void loop()
 
 ### Debug Terminal Output Samples
 
-1. The following is the sample terminal output when running example [ISR_16_Timers_Array](examples/ISR_16_Timers_Array) on **Teensy 4.1** to demonstrate the accuracy of ISR Hardware Timer, **especially when system is very busy or blocked**. The 16 independent ISR timers are **programmed to be activated repetitively after certain intervals, is activated exactly after that programmed interval !!!**
+### 1. ISR_16_Timers_Array on Teensy 4.1
+
+The following is the sample terminal output when running example [ISR_16_Timers_Array](examples/ISR_16_Timers_Array) on **Teensy 4.1** to demonstrate the accuracy of ISR Hardware Timer, **especially when system is very busy or blocked**. The 16 independent ISR timers are **programmed to be activated repetitively after certain intervals, is activated exactly after that programmed interval !!!**
 
 While software timer, **programmed for 2s, is activated after 10.000s in loop()!!!**.
 
@@ -631,7 +875,7 @@ In this example, 16 independent ISR Timers are used and utilized just one Hardwa
 
 ```
 Starting ISR_16_Timers_Array on Teensy 4.0/4.1
-Teensy_TimerInterrupt v1.1.1
+Teensy_TimerInterrupt v1.2.0
 CPU Frequency = 600 MHz
 TEENSY_TIMER_1, F_BUS_ACTUAL (MHz) = 150, request interval = 1000, actual interval (us) = 999
 Prescale = 2, _timerCount = 18750
@@ -699,11 +943,13 @@ simpleTimerDoingSomething2s: Delta programmed ms = 2000, actual = 10000
 
 ---
 
-2. The following is the sample terminal output when running example [**TimerInterruptTest**](examples/TimerInterruptTest) on **Teensy 4.1** to demonstrate how to start/stop and the accuracy of Hardware Timers.
+### 2. TimerInterruptTest on Teensy 4.1
+
+The following is the sample terminal output when running example [**TimerInterruptTest**](examples/TimerInterruptTest) on **Teensy 4.1** to demonstrate how to start/stop and the accuracy of Hardware Timers.
 
 ```
 Starting TimerInterruptTest on Teensy 4.0/4.1
-Teensy_TimerInterrupt v1.1.1
+Teensy_TimerInterrupt v1.2.0
 CPU Frequency = 600 MHz
 TEENSY_TIMER_1, F_BUS_ACTUAL (MHz) = 150, request interval = 30000, actual interval (us) = 29999
 Prescale = 7, _timerCount = 17578
@@ -740,11 +986,13 @@ TeensyTimerInterrupt:stopTimer TEENSY_TIMER_1
 
 ---
 
-3. The following is the sample terminal output when running example [**Argument_None**](examples/Argument_None) on **Teensy4.1** to demonstrate the accuracy of Hardware Timers.
+### 3. Argument_None on Teensy 4.1
+
+The following is the sample terminal output when running example [**Argument_None**](examples/Argument_None) on **Teensy4.1** to demonstrate the accuracy of Hardware Timers.
 
 ```
 Starting Argument_None on Teensy 4.0/4.1
-Teensy_TimerInterrupt v1.1.1
+Teensy_TimerInterrupt v1.2.0
 CPU Frequency = 600 MHz
 TEENSY_TIMER_1, F_BUS_ACTUAL (MHz) = 150, request interval = 50000, actual interval (us) = 49998
 Prescale = 7, _timerCount = 29296
@@ -786,11 +1034,13 @@ ITimer0: millis() = 2179, delta = 50
 
 ---
 
-4. The following is the sample terminal output when running example [Change_Interval](examples/Change_Interval) to demonstrate how to change Timer Interval on-the-fly
+### 4. Change_Interval on Teensy 4.1
+
+The following is the sample terminal output when running example [Change_Interval](examples/Change_Interval) on **Teensy4.1** to demonstrate how to change Timer Interval on-the-fly
 
 ```
 Starting Change_Interval on Teensy 4.0/4.1
-Teensy_TimerInterrupt v1.1.1
+Teensy_TimerInterrupt v1.2.0
 CPU Frequency = 600 MHz
 Starting  ITimer OK, millis() = 1432
 Time = 10001, TimerCount = 857
@@ -812,7 +1062,9 @@ Changing Interval, Timer = 20
 
 ---
 
-5. The following is the sample terminal output when running new example [ISR_16_Timers_Array_Complex](examples/ISR_16_Timers_Array_Complex) on **Teensy 4.1** to demonstrate the accuracy of ISR Hardware Timer, **especially when system is very busy or blocked**. The 16 independent ISR timers are **programmed to be activated repetitively after certain intervals, is activated exactly after that programmed interval !!!**
+### 5. ISR_16_Timers_Array_Complex on Teensy 4.1
+
+The following is the sample terminal output when running new example [ISR_16_Timers_Array_Complex](examples/ISR_16_Timers_Array_Complex) on **Teensy 4.1** to demonstrate the accuracy of ISR Hardware Timer, **especially when system is very busy or blocked**. The 16 independent ISR timers are **programmed to be activated repetitively after certain intervals, is activated exactly after that programmed interval !!!**
 
 While software timer, **programmed for 2s, is activated after 10.000s in loop()!!!**.
 
@@ -965,6 +1217,39 @@ Timer : 15, programmed : 80000, actual : 80000
 ---
 ---
 
+### Debug
+
+Debug is enabled by default on Serial.
+
+You can also change the debugging level (_TIMERINTERRUPT_LOGLEVEL_) from 0 to 4
+
+```cpp
+// These define's must be placed at the beginning before #include "TeensyTimerInterrupt.h"
+// _TIMERINTERRUPT_LOGLEVEL_ from 0 to 4
+// Don't define _TIMERINTERRUPT_LOGLEVEL_ > 0. Only for special ISR debugging only. Can hang the system.
+#define TIMER_INTERRUPT_DEBUG         0
+#define _TIMERINTERRUPT_LOGLEVEL_     0
+```
+
+---
+
+### Troubleshooting
+
+If you get compilation errors, more often than not, you may need to install a newer version of the core for Arduino boards.
+
+Sometimes, the library will only work if you update the board core to the latest version because I am using newly added functions.
+
+---
+---
+
+## Releases
+
+### Releases v1.2.0
+
+1. Add better debug feature.
+2. Optimize code and examples to reduce RAM usage
+3. Add Table of Contents
+
 ### Releases v1.1.1
 
 1. Add example [**Change_Interval**](examples/Change_Interval) and [**ISR_16_Timers_Array_Complex**](examples/ISR_16_Timers_Array_Complex)
@@ -991,9 +1276,9 @@ Timer : 15, programmed : 80000, actual : 80000
 ---
 ---
 
-### Issues ###
+### Issues
 
-Submit issues to: [Teensy_TimerInterrupt issues](https://github.com/khoih-prog/Teensy_TimerInterrupt/issues)
+Submit issues to: [Teensy_TimerInterrupt issues](https://github.com/khoih-prog/Teensy_TimerInter/issues)
 
 ---
 
@@ -1002,14 +1287,15 @@ Submit issues to: [Teensy_TimerInterrupt issues](https://github.com/khoih-prog/T
 1. Search for bug and improvement.
 2. Similar features for more sophisticated Teensy 4.x Timers (**FTM, GPT, QUAD, PIT**)
 
+---
 
 ## DONE
-
-For current version v1.0.0
 
 1. Basic hardware timers for Teensy, using Timer1 and Timer3.
 2. More hardware-initiated software-enabled timers
 3. Longer time interval
+4. Similar features for remaining Arduino boards such as AVR, ESP32, ESP8266, STM32, SAM-DUE, SAMD21/SAMD51, mbed-nRF52, nRF52, etc.
+5. Add Table of Contents
 
 ---
 ---
