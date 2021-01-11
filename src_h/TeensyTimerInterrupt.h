@@ -31,6 +31,9 @@
 
 #pragma once
 
+#ifndef TEENSYTIMERINTERRUPT_H
+#define TEENSYTIMERINTERRUPT_H
+
 #if !( defined(CORE_TEENSY) || defined(TEENSYDUINO) )
   #error This code is designed to run on Teensy platform! Please check your Tools->Board setting.
 #endif
@@ -116,7 +119,7 @@ class TeensyTimerInterrupt
     }
     
     // frequency (in hertz) and duration (in milliseconds). Duration = 0 or not specified => run indefinitely
-    // No params and duration now. To be addes in the future by adding similar functions here or to NRF52-hal-timer.c
+    // No params and duration now. To be added in the future by adding similar functions here or to NRF52-hal-timer.c
     bool setFrequency(float frequency, timerCallback callback) __attribute__((always_inline))
     {
       return setInterval((float) (1000000.0f / frequency), callback);
@@ -232,7 +235,7 @@ class TeensyTimerInterrupt
     }
 
     // interval (in microseconds) and duration (in milliseconds). Duration = 0 or not specified => run indefinitely
-    // No params and duration now. To be addes in the future by adding similar functions here or to NRF52-hal-timer.c
+    // No params and duration now. To be added in the future by adding similar functions here or to NRF52-hal-timer.c
     bool attachInterruptInterval(unsigned long interval, timerCallback callback) __attribute__((always_inline))
     {
       return setInterval(interval, callback);
@@ -457,7 +460,7 @@ class TeensyTimerInterrupt
     }
     
     // frequency (in hertz) and duration (in milliseconds). Duration = 0 or not specified => run indefinitely
-    // No params and duration now. To be addes in the future by adding similar functions here or to NRF52-hal-timer.c
+    // No params and duration now. To be added in the future by adding similar functions here or to NRF52-hal-timer.c
     bool setFrequency(float frequency, timerCallback callback) __attribute__((always_inline))
     {
       return setInterval((float) (1000000.0f / frequency), callback);
@@ -601,7 +604,7 @@ class TeensyTimerInterrupt
     }
 
     // interval (in microseconds) and duration (in milliseconds). Duration = 0 or not specified => run indefinitely
-    // No params and duration now. To be addes in the future by adding similar functions here or to NRF52-hal-timer.c
+    // No params and duration now. To be added in the future by adding similar functions here or to NRF52-hal-timer.c
     bool attachInterruptInterval(unsigned long interval, timerCallback callback) __attribute__((always_inline))
     {
       return setInterval(interval, callback);
@@ -828,7 +831,7 @@ class TeensyTimerInterrupt
     }
     
     // frequency (in hertz) and duration (in milliseconds). Duration = 0 or not specified => run indefinitely
-    // No params and duration now. To be addes in the future by adding similar functions here or to NRF52-hal-timer.c
+    // No params and duration now. To be added in the future by adding similar functions here or to NRF52-hal-timer.c
     bool setFrequency(float frequency, timerCallback callback) __attribute__((always_inline))
     {
       return setInterval((float) (1000000.0f / frequency), callback);
@@ -962,7 +965,7 @@ class TeensyTimerInterrupt
     }
 
     // interval (in microseconds) and duration (in milliseconds). Duration = 0 or not specified => run indefinitely
-    // No params and duration now. To be addes in the future by adding similar functions here or to NRF52-hal-timer.c
+    // No params and duration now. To be added in the future by adding similar functions here or to NRF52-hal-timer.c
     bool attachInterruptInterval(unsigned long interval, timerCallback callback) __attribute__((always_inline))
     {
       return setInterval(interval, callback);
@@ -1098,4 +1101,4 @@ ISR(TIMER3_OVF_vect)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-
+#endif    // TEENSYTIMERINTERRUPT_H

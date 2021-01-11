@@ -346,7 +346,7 @@ Before using any Timer, you have to make sure the Timer has not been used by any
 
 ### 1. Using only Hardware Timer directly
 
-#### 1.1 Init Hardware Timer
+### 1.1 Init Hardware Timer
 
 ```
 // You can select Teensy Hardware Timer  from TEENSY_TIMER_1 or TEENSY_TIMER_3
@@ -355,7 +355,7 @@ Before using any Timer, you have to make sure the Timer has not been used by any
 TeensyTimer ITimer0(TEENSY_TIMER_1);
 ```
 
-#### 1.2 Set Hardware Timer Interval and attach Timer Interrupt Handler function
+### 1.2 Set Hardware Timer Interval and attach Timer Interrupt Handler function
 
 Use one of these functions with **interval in unsigned long milliseconds**
 
@@ -438,7 +438,7 @@ void setup()
 
 The 16 ISR_based Timers, designed for long timer intervals, only support using **unsigned long millisec intervals**. If you have to use much higher frequency or sub-millisecond interval, you have to use the Hardware Timers directly as in [1.3 Set Hardware Timer Frequency and attach Timer Interrupt Handler function](#13-set-hardware-timer-frequency-and-attach-timer-interrupt-handler-function)
 
-#### 2.2 Init Hardware Timer and ISR-based Timer
+### 2.2 Init Hardware Timer and ISR-based Timer
 
 ```
 // You can select Teensy Hardware Timer  from TEENSY_TIMER_1 or TEENSY_TIMER_3
@@ -451,7 +451,7 @@ TeensyTimer ITimer(TEENSY_TIMER_1);
 Teensy_ISR_Timer ISR_Timer;
 ```
 
-#### 2.3 Set Hardware Timer Interval and attach Timer Interrupt Handler functions
+### 2.3 Set Hardware Timer Interval and attach Timer Interrupt Handler functions
 
 ```
 void TimerHandler(void)
