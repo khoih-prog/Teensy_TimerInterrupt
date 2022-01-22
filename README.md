@@ -11,6 +11,7 @@
 
 ## Table of Contents
 
+* [Important Change from v1.3.0](#Important-Change-from-v130)
 * [Why do we need this Teensy_TimerInterrupt library](#why-do-we-need-this-teensy_timerinterrupt-library)
   * [Features](#features)
   * [Why using ISR-based Hardware Timer Interrupt is better](#why-using-isr-based-hardware-timer-interrupt-is-better)
@@ -57,6 +58,7 @@
   * [  8. TimerInterruptLEDDemo](examples/TimerInterruptLEDDemo)
   * [  9. **Change_Interval**](examples/Change_Interval)
   * [ 10. **ISR_16_Timers_Array_Complex**](examples/ISR_16_Timers_Array_Complex)
+  * [ 11. **multiFileProject**](examples/multiFileProject) **New**
 * [Example ISR_16_Timers_Array_Complex](#example-isr_16_timers_array_complex)
 * [Debug Terminal Output Samples](#debug-terminal-output-samples)
   * [1. ISR_16_Timers_Array on Teensy 4.1](#1-isr_16_timers_array-on-teensy-41)
@@ -66,7 +68,6 @@
   * [5. ISR_16_Timers_Array_Complex on Teensy 4.1](#5-isr_16_timers_array_complex-on-teensy-41)
 * [Debug](#debug)
 * [Troubleshooting](#troubleshooting)
-* [Releases](#releases)
 * [Issues](#issues)
 * [TO DO](#to-do)
 * [DONE](#done)
@@ -77,6 +78,10 @@
 
 ---
 ---
+
+### Important Change from v1.3.0
+
+Please have a look at [HOWTO Fix `Multiple Definitions` Linker Error](#howto-fix-multiple-definitions-linker-error)
 
 ### Why do we need this [Teensy_TimerInterrupt library](https://github.com/khoih-prog/Teensy_TimerInterrupt)
 
@@ -129,7 +134,7 @@ The catch is **your function is now part of an ISR (Interrupt Service Routine), 
 
 1. **Teensy boards** such as :
 
-  - **Teensy 4.1, 4.0**
+  - **Teensy 4.1, 4.0, Teensy MicroMod**
   - **Teensy 3.6, 3.5, 3.2/3.1, 3.0**
   - **Teensy LC**
   - **Teensy++ 2.0 and Teensy 2.0**
@@ -145,37 +150,13 @@ The catch is **your function is now part of an ISR (Interrupt Service Routine), 
 ---
 ---
 
-## Changelog
-
-### Releases v1.2.0
-
-1. Add better debug feature.
-2. Optimize code and examples to reduce RAM usage
-3. Add Table of Contents
-
-### Releases v1.1.1
-
-1. Add example [**Change_Interval**](examples/Change_Interval) and [**ISR_16_Timers_Array_Complex**](examples/ISR_16_Timers_Array_Complex)
-2. Bump up version to sync with other TimerInterrupt Libraries. Modify Version String.
-
-### Releases v1.0.1
-
-1. Add complicated example [ISR_16_Timers_Array](examples/ISR_16_Timers_Array) utilizing and demonstrating the full usage of 16 independent ISR Timers.
-
-### Releases v1.0.0
-
-1. Permit up to 16 super-long-time, super-accurate ISR-based timers to avoid being blocked
-2. Using cpp code besides Impl.h code to use if Multiple-Definition linker error.
- 
----
----
 
 ## Prerequisites
 
- 1. [`Arduino IDE 1.8.13+` for Arduino](https://www.arduino.cc/en/Main/Software)
- 2. [`Teensy Core 1.53+`](https://www.pjrc.com/teensy/td_download.html) for Teensy.
+ 1. [`Arduino IDE 1.8.19+` for Arduino](https://github.com/arduino/Arduino). [![GitHub release](https://img.shields.io/github/release/arduino/Arduino.svg)](https://github.com/arduino/Arduino/releases/latest)
+ 2. [`Teensy Core 1.56+`](https://www.pjrc.com/teensy/td_download.html) for Teensy.
  3. To use with certain example, 
-   - [`SimpleTimer library`](https://github.com/schinken/SimpleTimer) for [ISR_16_Timers_Array example](examples/ISR_16_Timers_Array).
+   - [`SimpleTimer library`](https://github.com/jfturcot/SimpleTimer) for [ISR_16_Timers_Array example](examples/ISR_16_Timers_Array).
 
 ---
 ---
@@ -210,18 +191,20 @@ Another way to install is to:
 
 #### 1. For Teensy boards
  
- **To be able to compile and run on Teensy boards**, you have to copy the file [Teensy boards.txt](Packages_Patches/hardware/teensy/avr/boards.txt) into Teensy hardware directory (./arduino-1.8.13/hardware/teensy/avr/boards.txt). 
+ **To be able to compile and run on Teensy boards**, you have to copy the file [Teensy boards.txt](Packages_Patches/hardware/teensy/avr/boards.txt) into Teensy hardware directory (./arduino-1.8.19/hardware/teensy/avr/boards.txt). 
 
-Supposing the Arduino version is 1.8.13. This file must be copied into the directory:
+Supposing the Arduino version is 1.8.19. These files must be copied into the directory:
 
-- `./arduino-1.8.13/hardware/teensy/avr/boards.txt`
-- `./arduino-1.8.13/hardware/teensy/avr/cores/teensy3/Stream.h`
-- `./arduino-1.8.13/hardware/teensy/avr/cores/teensy4/Stream.h`
+- `./arduino-1.8.19/hardware/teensy/avr/boards.txt`
+- `./arduino-1.8.19/hardware/teensy/avr/cores/teensy/Stream.h`
+- `./arduino-1.8.19/hardware/teensy/avr/cores/teensy3/Stream.h`
+- `./arduino-1.8.19/hardware/teensy/avr/cores/teensy4/Stream.h`
 
 Whenever a new version is installed, remember to copy this file into the new version directory. For example, new version is x.yy.zz
 This file must be copied into the directory:
 
 - `./arduino-x.yy.zz/hardware/teensy/avr/boards.txt`
+- `./arduino-x.yy.zz/hardware/teensy/avr/cores/teensy/Stream.h`
 - `./arduino-x.yy.zz/hardware/teensy/avr/cores/teensy3/Stream.h`
 - `./arduino-x.yy.zz/hardware/teensy/avr/cores/teensy4/Stream.h`
 
@@ -298,24 +281,28 @@ To add UDP Multicast support, necessary for the [**UPnP_Generic library**](https
 
 ### HOWTO Fix `Multiple Definitions` Linker Error
 
-The current library implementation, using **xyz-Impl.h instead of standard xyz.cpp**, possibly creates certain `Multiple Definitions` Linker error in certain use cases. Although it's simple to just modify several lines of code, either in the library or in the application, the library is adding 2 more source directories
+The current library implementation, using `xyz-Impl.h` instead of standard `xyz.cpp`, possibly creates certain `Multiple Definitions` Linker error in certain use cases.
 
-1. **scr_h** for new h-only files
-2. **src_cpp** for standard h/cpp files
+You can include `.hpp`
 
-besides the standard **src** directory.
+```
+// Can be included as many times as necessary, without `Multiple Definitions` Linker Error
+#include "TeensyTimerInterrupt.hpp"     //https://github.com/khoih-prog/Teensy_TimerInterrupt
 
-To use the **old standard cpp** way, locate this library' directory, then just 
+// Can be included as many times as necessary, without `Multiple Definitions` Linker Error
+#include "Teensy_ISR_Timer.hpp"         //https://github.com/khoih-prog/Teensy_TimerInterrupt
+```
 
-1. **Delete the all the files in src directory.**
-2. **Copy all the files in src_cpp directory into src.**
-3. Close then reopen the application code in Arduino IDE, etc. to recompile from scratch.
+in many files. But be sure to use the following `.h` files **in just 1 `.h`, `.cpp` or `.ino` file**, which must **not be included in any other file**, to avoid `Multiple Definitions` Linker Error
 
-To re-use the **new h-only** way, just 
+```
+// To be included only in main(), .ino with setup() to avoid `Multiple Definitions` Linker Error
+#include "TeensyTimerInterrupt.h"       //https://github.com/khoih-prog/Teensy_TimerInterrupt
 
-1. **Delete the all the files in src directory.**
-2. **Copy the files in src_h directory into src.**
-3. Close then reopen the application code in Arduino IDE, etc. to recompile from scratch.
+// To be included only in main(), .ino with setup() to avoid `Multiple Definitions` Linker Error
+#include "Teensy_ISR_Timer.h"           //https://github.com/khoih-prog/Teensy_TimerInterrupt
+```
+
 
 ---
 ---
@@ -525,8 +512,8 @@ void setup()
  7. [TimerInterruptTest](examples/TimerInterruptTest)
  8. [TimerInterruptLEDDemo](examples/TimerInterruptLEDDemo)
  9. [**Change_Interval**](examples/Change_Interval). New
-10. [**ISR_16_Timers_Array_Complex**](examples/ISR_16_Timers_Array_Complex). New
-
+10. [**ISR_16_Timers_Array_Complex**](examples/ISR_16_Timers_Array_Complex).
+11. [**multiFileProject**](examples/multiFileProject). **New**
 
 ---
 ---
@@ -543,12 +530,15 @@ void setup()
 // Don't define _TIMERINTERRUPT_LOGLEVEL_ > 0. Only for special ISR debugging only. Can hang the system.
 // Don't define TIMER_INTERRUPT_DEBUG > 2. Only for special ISR debugging only. Can hang the system.
 #define TIMER_INTERRUPT_DEBUG         0
-#define _TIMERINTERRUPT_LOGLEVEL_     0
+#define _TIMERINTERRUPT_LOGLEVEL_     3
 
+// To be included only in main(), .ino with setup() to avoid `Multiple Definitions` Linker Error
 #include "TeensyTimerInterrupt.h"
+
+// To be included only in main(), .ino with setup() to avoid `Multiple Definitions` Linker Error
 #include "Teensy_ISR_Timer.h"
 
-#include <SimpleTimer.h>              // https://github.com/schinken/SimpleTimer
+#include <SimpleTimer.h>              // https://github.com/jfturcot/SimpleTimer
 
 #ifndef LED_BUILTIN
   #define LED_BUILTIN       13
@@ -874,11 +864,12 @@ While software timer, **programmed for 2s, is activated after 10.000s in loop()!
 In this example, 16 independent ISR Timers are used and utilized just one Hardware Timer. The Timer Intervals and Function Pointers are stored in arrays to facilitate the code modification.
 
 ```
-Starting ISR_16_Timers_Array on Teensy 4.0/4.1
-Teensy_TimerInterrupt v1.2.0
+Starting TimerInterruptTest on Teensy 4.1
+TeensyTimerInterrupt v1.3.0
 CPU Frequency = 600 MHz
-TEENSY_TIMER_1, F_BUS_ACTUAL (MHz) = 150, request interval = 1000, actual interval (us) = 999
-Prescale = 2, _timerCount = 18750
+[TISR] TEENSY_TIMER_1: F_BUS_ACTUAL (MHz) = 150
+[TISR] Request interval = 1000, actual interval (us) = 999
+[TISR] Prescale = 2, _timerCount = 18750
 Starting  ITimer OK, millis() = 1241
 1s: Delta ms = 1000, ms = 2241
 1s: Delta ms = 1000, ms = 3241
@@ -948,11 +939,12 @@ simpleTimerDoingSomething2s: Delta programmed ms = 2000, actual = 10000
 The following is the sample terminal output when running example [**TimerInterruptTest**](examples/TimerInterruptTest) on **Teensy 4.1** to demonstrate how to start/stop and the accuracy of Hardware Timers.
 
 ```
-Starting TimerInterruptTest on Teensy 4.0/4.1
-Teensy_TimerInterrupt v1.2.0
+Starting TimerInterruptTest on Teensy 4.1
+TeensyTimerInterrupt v1.3.0
 CPU Frequency = 600 MHz
-TEENSY_TIMER_1, F_BUS_ACTUAL (MHz) = 150, request interval = 30000, actual interval (us) = 29999
-Prescale = 7, _timerCount = 17578
+[TISR] TEENSY_TIMER_1: F_BUS_ACTUAL (MHz) = 150
+[TISR] Request interval = 50000, actual interval (us) = 49998
+[TISR] Prescale = 7, _timerCount = 29296
 Starting  ITimer0 OK, millis() = 1128
 Stop ITimer0, millis() = 5001
 TeensyTimerInterrupt:stopTimer TEENSY_TIMER_1
@@ -991,11 +983,12 @@ TeensyTimerInterrupt:stopTimer TEENSY_TIMER_1
 The following is the sample terminal output when running example [**Argument_None**](examples/Argument_None) on **Teensy4.1** to demonstrate the accuracy of Hardware Timers.
 
 ```
-Starting Argument_None on Teensy 4.0/4.1
-Teensy_TimerInterrupt v1.2.0
+Starting Argument_None on Teensy 4.1
+TeensyTimerInterrupt v1.3.0
 CPU Frequency = 600 MHz
-TEENSY_TIMER_1, F_BUS_ACTUAL (MHz) = 150, request interval = 50000, actual interval (us) = 49998
-Prescale = 7, _timerCount = 29296
+[TISR] TEENSY_TIMER_1: F_BUS_ACTUAL (MHz) = 150
+[TISR] Request interval = 50000, actual interval (us) = 49998
+[TISR] Prescale = 7, _timerCount = 29296
 Starting  ITimer0 OK, millis() = 629
 ITimer0: millis() = 629, delta = 629
 ITimer0: millis() = 679, delta = 50
@@ -1039,9 +1032,12 @@ ITimer0: millis() = 2179, delta = 50
 The following is the sample terminal output when running example [Change_Interval](examples/Change_Interval) on **Teensy4.1** to demonstrate how to change Timer Interval on-the-fly
 
 ```
-Starting Change_Interval on Teensy 4.0/4.1
-Teensy_TimerInterrupt v1.2.0
+Starting Change_Interval on Teensy 4.1
+TeensyTimerInterrupt v1.3.0
 CPU Frequency = 600 MHz
+[TISR] TEENSY_TIMER_1: F_BUS_ACTUAL (MHz) = 150
+[TISR] Request interval = 10000, actual interval (us) = 9999
+[TISR] Prescale = 5, _timerCount = 23437
 Starting  ITimer OK, millis() = 1432
 Time = 10001, TimerCount = 857
 Time = 20002, TimerCount = 1857
@@ -1071,11 +1067,12 @@ While software timer, **programmed for 2s, is activated after 10.000s in loop()!
 In this example, 16 independent ISR Timers are used, yet utilized just one Hardware Timer. The Timer Intervals and Function Pointers are stored in arrays to facilitate the code modification.
 
 ```
-Starting ISR_16_Timers_Array_Complex on Teensy 4.0/4.1
-Teensy_TimerInterrupt v1.1.1
+Starting ISR_16_Timers_Array_Complex on Teensy 4.1
+TeensyTimerInterrupt v1.3.0
 CPU Frequency = 600 MHz
-TEENSY_TIMER_1, F_BUS_ACTUAL (MHz) = 150, request interval = 10000, actual interval (us) = 9999
-Prescale = 5, _timerCount = 23437
+[TISR] TEENSY_TIMER_1: F_BUS_ACTUAL (MHz) = 150
+[TISR] Request interval = 10000, actual interval (us) = 9999
+[TISR] Prescale = 5, _timerCount = 23437
 Starting  ITimer OK, millis() = 1247
 SimpleTimer : 2s, ms = 11247, Dms : 10000
 Timer : 0, programmed : 5000, actual : 5000
@@ -1242,39 +1239,6 @@ Sometimes, the library will only work if you update the board core to the latest
 ---
 ---
 
-## Releases
-
-### Releases v1.2.0
-
-1. Add better debug feature.
-2. Optimize code and examples to reduce RAM usage
-3. Add Table of Contents
-
-### Releases v1.1.1
-
-1. Add example [**Change_Interval**](examples/Change_Interval) and [**ISR_16_Timers_Array_Complex**](examples/ISR_16_Timers_Array_Complex)
-2. Bump up version to sync with other TimerInterrupt Libraries. Modify Version String.
-
-### Releases v1.0.1
-
-1. Add complicated example [ISR_16_Timers_Array](examples/ISR_16_Timers_Array) utilizing and demonstrating the full usage of 16 independent ISR Timers.
-
-### Releases v1.0.0
-
-1. Permit up to 16 super-long-time, super-accurate ISR-based timers to avoid being blocked
-2. Using cpp code besides Impl.h code to use if Multiple-Definition linker error.
-
-#### Supported Boards
-
-1. **Teensy boards** such as :
-
-  - **Teensy 4.1, 4.0**
-  - **Teensy 3.6, 3.5, 3.2/3.1, 3.0**
-  - **Teensy LC**
-  - **Teensy++ 2.0 and Teensy 2.0**
-
----
----
 
 ### Issues
 
@@ -1296,6 +1260,8 @@ Submit issues to: [Teensy_TimerInterrupt issues](https://github.com/khoih-prog/T
 3. Longer time interval
 4. Similar features for remaining Arduino boards such as AVR, ESP32, ESP8266, STM32, SAM-DUE, SAMD21/SAMD51, mbed-nRF52, nRF52, etc.
 5. Add Table of Contents
+6. Fix `multiple-definitions` linker error
+7. Optimize library code by using `reference-passing` instead of `value-passing`
 
 ---
 ---

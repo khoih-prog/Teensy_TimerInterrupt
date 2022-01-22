@@ -19,7 +19,7 @@
   Based on BlynkTimer.h
   Author: Volodymyr Shymanskyy
 
-  Version: 1.2.0
+  Version: 1.3.0
 
   Version Modified By   Date      Comments
   ------- -----------  ---------- -----------
@@ -27,6 +27,7 @@
   1.0.1   K Hoang      06/11/2020 Add complicated example ISR_16_Timers_Array using all 16 independent ISR Timers.
   1.1.1   K.Hoang      06/12/2020 Add complex examples. Bump up version to sync with other TimerInterrupt Libraries
   1.2.0   K.Hoang      11/01/2021 Add better debug feature. Optimize code and examples to reduce RAM usage
+  1.3.0   K.Hoang      21/01/2022 Fix `multiple-definitions` linker error. Fix bug
 *****************************************************************************************************************************/
 
 #pragma once
@@ -34,7 +35,6 @@
 #ifndef ISR_TIMER_GENERIC_IMPL_H
 #define ISR_TIMER_GENERIC_IMPL_H
 
-//#include "Teensy_ISR_Timer.h"
 #include <string.h>
 
 Teensy_ISR_Timer::Teensy_ISR_Timer()
@@ -148,7 +148,7 @@ int Teensy_ISR_Timer::findFirstFreeSlot()
 }
 
 
-int Teensy_ISR_Timer::setupTimer(unsigned long d, void* f, void* p, bool h, unsigned n) 
+int Teensy_ISR_Timer::setupTimer(const unsigned long& d, void* f, void* p, bool h, const unsigned& n) 
 {
   int freeTimer;
 
@@ -182,37 +182,37 @@ int Teensy_ISR_Timer::setupTimer(unsigned long d, void* f, void* p, bool h, unsi
 }
 
 
-int Teensy_ISR_Timer::setTimer(unsigned long d, timerCallback f, unsigned n) 
+int Teensy_ISR_Timer::setTimer(const unsigned long& d, timerCallback f, const unsigned& n) 
 {
   return setupTimer(d, (void *)f, NULL, false, n);
 }
 
-int Teensy_ISR_Timer::setTimer(unsigned long d, timerCallback_p f, void* p, unsigned n) 
+int Teensy_ISR_Timer::setTimer(const unsigned long& d, timerCallback_p f, void* p, const unsigned& n) 
 {
   return setupTimer(d, (void *)f, p, true, n);
 }
 
-int Teensy_ISR_Timer::setInterval(unsigned long d, timerCallback f) 
+int Teensy_ISR_Timer::setInterval(const unsigned long& d, timerCallback f) 
 {
   return setupTimer(d, (void *)f, NULL, false, TIMER_RUN_FOREVER);
 }
 
-int Teensy_ISR_Timer::setInterval(unsigned long d, timerCallback_p f, void* p) 
+int Teensy_ISR_Timer::setInterval(const unsigned long& d, timerCallback_p f, void* p) 
 {
   return setupTimer(d, (void *)f, p, true, TIMER_RUN_FOREVER);
 }
 
-int Teensy_ISR_Timer::setTimeout(unsigned long d, timerCallback f) 
+int Teensy_ISR_Timer::setTimeout(const unsigned long& d, timerCallback f) 
 {
   return setupTimer(d, (void *)f, NULL, false, TIMER_RUN_ONCE);
 }
 
-int Teensy_ISR_Timer::setTimeout(unsigned long d, timerCallback_p f, void* p) 
+int Teensy_ISR_Timer::setTimeout(const unsigned long& d, timerCallback_p f, void* p) 
 {
   return setupTimer(d, (void *)f, p, true, TIMER_RUN_ONCE);
 }
 
-bool Teensy_ISR_Timer::changeInterval(unsigned numTimer, unsigned long d) 
+bool Teensy_ISR_Timer::changeInterval(const unsigned& numTimer, const unsigned long& d) 
 {
   if (numTimer >= MAX_NUMBER_TIMERS) 
   {
@@ -232,7 +232,7 @@ bool Teensy_ISR_Timer::changeInterval(unsigned numTimer, unsigned long d)
   return false;
 }
 
-void Teensy_ISR_Timer::deleteTimer(unsigned timerId) 
+void Teensy_ISR_Timer::deleteTimer(const unsigned& timerId) 
 {
   if (timerId >= MAX_NUMBER_TIMERS) 
   {
@@ -257,7 +257,7 @@ void Teensy_ISR_Timer::deleteTimer(unsigned timerId)
 }
 
 // function contributed by code@rowansimms.com
-void Teensy_ISR_Timer::restartTimer(unsigned numTimer) 
+void Teensy_ISR_Timer::restartTimer(const unsigned& numTimer) 
 {
   if (numTimer >= MAX_NUMBER_TIMERS) 
   {
@@ -268,7 +268,7 @@ void Teensy_ISR_Timer::restartTimer(unsigned numTimer)
 }
 
 
-bool Teensy_ISR_Timer::isEnabled(unsigned numTimer) 
+bool Teensy_ISR_Timer::isEnabled(const unsigned& numTimer) 
 {
   if (numTimer >= MAX_NUMBER_TIMERS) 
   {
@@ -279,7 +279,7 @@ bool Teensy_ISR_Timer::isEnabled(unsigned numTimer)
 }
 
 
-void Teensy_ISR_Timer::enable(unsigned numTimer) 
+void Teensy_ISR_Timer::enable(const unsigned& numTimer) 
 {
   if (numTimer >= MAX_NUMBER_TIMERS) 
   {
@@ -290,7 +290,7 @@ void Teensy_ISR_Timer::enable(unsigned numTimer)
 }
 
 
-void Teensy_ISR_Timer::disable(unsigned numTimer) 
+void Teensy_ISR_Timer::disable(const unsigned& numTimer) 
 {
   if (numTimer >= MAX_NUMBER_TIMERS) 
   {
@@ -326,7 +326,7 @@ void Teensy_ISR_Timer::disableAll()
   }
 }
 
-void Teensy_ISR_Timer::toggle(unsigned numTimer) 
+void Teensy_ISR_Timer::toggle(const unsigned& numTimer) 
 {
   if (numTimer >= MAX_NUMBER_TIMERS) 
   {
