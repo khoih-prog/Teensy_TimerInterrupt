@@ -17,11 +17,6 @@
   * [Why using ISR-based Hardware Timer Interrupt is better](#why-using-isr-based-hardware-timer-interrupt-is-better)
   * [Currently supported Boards](#currently-supported-boards)
   * [Important Notes about ISR](#important-notes-about-isr)
-* [Changelog](#changelog)
-  * [Releases v1.2.0](#releases-v120)
-  * [Releases v1.1.1](#releases-v111)
-  * [Releases v1.0.1](#releases-v101)
-  * [Releases v1.0.0](#releases-v100)
 * [Prerequisites](#prerequisites)
 * [Installation](#installation)
   * [Use Arduino Library Manager](#use-arduino-library-manager)
@@ -302,6 +297,8 @@ in many files. But be sure to use the following `.h` files **in just 1 `.h`, `.c
 // To be included only in main(), .ino with setup() to avoid `Multiple Definitions` Linker Error
 #include "Teensy_ISR_Timer.h"           //https://github.com/khoih-prog/Teensy_TimerInterrupt
 ```
+
+Check the new [**multiFileProject** example](examples/multiFileProject) for a `HOWTO` demo.
 
 
 ---
