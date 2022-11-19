@@ -37,42 +37,50 @@
 
 #if ( defined(__arm__) && defined(TEENSYDUINO) && defined(__IMXRT1062__) )
 
-  // Nothing here yet
+// Nothing here yet
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 // For Teensy 3.x and LC
 #elif defined(__arm__) && defined(TEENSYDUINO) && (defined(KINETISK) || defined(KINETISL))
 
-  void ftm1_isr()
-  {
-    uint32_t sc = FTM1_SC;
-    
-  #ifdef KINETISL
-    if (sc & 0x80) 
-      FTM1_SC = sc;
-  #else
-    if (sc & 0x80) 
-      FTM1_SC = sc & 0x7F;
-  #endif
+void ftm1_isr()
+{
+  uint32_t sc = FTM1_SC;
 
-    (*(TeensyTimers[TEENSY_TIMER_1]->getCallback()))();
-  }
+#ifdef KINETISL
 
-  void ftm2_isr()
-  {
-    uint32_t sc = FTM2_SC;
-    
-  #ifdef KINETISL
-    if (sc & 0x80) 
-      FTM2_SC = sc;
-  #else
-    if (sc & 0x80) 
-      FTM2_SC = sc & 0x7F;
-  #endif
+  if (sc & 0x80)
+    FTM1_SC = sc;
 
-    (*(TeensyTimers[TEENSY_TIMER_3]->getCallback()))();
-  }
+#else
+
+  if (sc & 0x80)
+    FTM1_SC = sc & 0x7F;
+
+#endif
+
+  (*(TeensyTimers[TEENSY_TIMER_1]->getCallback()))();
+}
+
+void ftm2_isr()
+{
+  uint32_t sc = FTM2_SC;
+
+#ifdef KINETISL
+
+  if (sc & 0x80)
+    FTM2_SC = sc;
+
+#else
+
+  if (sc & 0x80)
+    FTM2_SC = sc & 0x7F;
+
+#endif
+
+  (*(TeensyTimers[TEENSY_TIMER_3]->getCallback()))();
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
@@ -80,23 +88,23 @@
 
 #elif ( defined(ARDUINO_ARCH_AVR) || defined(__AVR__) )
 
-  ISR(TIMER1_OVF_vect)
-  {
-    (*(TeensyTimers[TEENSY_TIMER_1]->getCallback()))();
-  }
+ISR(TIMER1_OVF_vect)
+{
+  (*(TeensyTimers[TEENSY_TIMER_1]->getCallback()))();
+}
 
-  ISR(TIMER3_OVF_vect)
-  {
-    (*(TeensyTimers[TEENSY_TIMER_3]->getCallback()))();
-  }
+ISR(TIMER3_OVF_vect)
+{
+  (*(TeensyTimers[TEENSY_TIMER_3]->getCallback()))();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
 #else
 
-  #error Not support board
-  
+#error Not support board
+
 #endif
 
 

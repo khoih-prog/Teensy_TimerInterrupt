@@ -42,11 +42,11 @@ Teensy_ISR_Timer::Teensy_ISR_Timer()
 {
 }
 
-void Teensy_ISR_Timer::init() 
+void Teensy_ISR_Timer::init()
 {
   unsigned long current_millis = millis();   //elapsed();
 
-  for (uint8_t i = 0; i < MAX_NUMBER_TIMERS; i++) 
+  for (uint8_t i = 0; i < MAX_NUMBER_TIMERS; i++)
   {
     memset((void*) &timer[i], 0, sizeof (timer_t));
     timer[i].prev_millis = current_millis;
@@ -55,7 +55,7 @@ void Teensy_ISR_Timer::init()
   numTimers = 0;
 }
 
-void Teensy_ISR_Timer::run() 
+void Teensy_ISR_Timer::run()
 {
   uint8_t i;
   unsigned long current_millis;
@@ -63,42 +63,42 @@ void Teensy_ISR_Timer::run()
   // get current time
   current_millis = millis();   //elapsed();
 
-  for (i = 0; i < MAX_NUMBER_TIMERS; i++) 
+  for (i = 0; i < MAX_NUMBER_TIMERS; i++)
   {
 
     timer[i].toBeCalled = TIMER_DEFCALL_DONTRUN;
 
     // no callback == no timer, i.e. jump over empty slots
-    if (timer[i].callback != NULL) 
+    if (timer[i].callback != NULL)
     {
 
       // is it time to process this timer ?
       // see http://arduino.cc/forum/index.php/topic,124048.msg932592.html#msg932592
 
-      if ((current_millis - timer[i].prev_millis) >= timer[i].delay) 
+      if ((current_millis - timer[i].prev_millis) >= timer[i].delay)
       {
         unsigned long skipTimes = (current_millis - timer[i].prev_millis) / timer[i].delay;
-        
+
         // update time
         timer[i].prev_millis += timer[i].delay * skipTimes;
 
         // check if the timer callback has to be executed
-        if (timer[i].enabled) 
+        if (timer[i].enabled)
         {
 
           // "run forever" timers must always be executed
-          if (timer[i].maxNumRuns == TIMER_RUN_FOREVER) 
+          if (timer[i].maxNumRuns == TIMER_RUN_FOREVER)
           {
             timer[i].toBeCalled = TIMER_DEFCALL_RUNONLY;
           }
           // other timers get executed the specified number of times
-          else if (timer[i].numRuns < timer[i].maxNumRuns) 
+          else if (timer[i].numRuns < timer[i].maxNumRuns)
           {
             timer[i].toBeCalled = TIMER_DEFCALL_RUNONLY;
             timer[i].numRuns++;
 
             // after the last run, delete the timer
-            if (timer[i].numRuns >= timer[i].maxNumRuns) 
+            if (timer[i].numRuns >= timer[i].maxNumRuns)
             {
               timer[i].toBeCalled = TIMER_DEFCALL_RUNANDDEL;
             }
@@ -108,7 +108,7 @@ void Teensy_ISR_Timer::run()
     }
   }
 
-  for (i = 0; i < MAX_NUMBER_TIMERS; i++) 
+  for (i = 0; i < MAX_NUMBER_TIMERS; i++)
   {
     if (timer[i].toBeCalled == TIMER_DEFCALL_DONTRUN)
       continue;
@@ -126,18 +126,18 @@ void Teensy_ISR_Timer::run()
 
 // find the first available slot
 // return -1 if none found
-int Teensy_ISR_Timer::findFirstFreeSlot() 
+int Teensy_ISR_Timer::findFirstFreeSlot()
 {
   // all slots are used
-  if (numTimers >= MAX_NUMBER_TIMERS) 
+  if (numTimers >= MAX_NUMBER_TIMERS)
   {
     return -1;
   }
 
   // return the first slot with no callback (i.e. free)
-  for (uint8_t i = 0; i < MAX_NUMBER_TIMERS; i++) 
+  for (uint8_t i = 0; i < MAX_NUMBER_TIMERS; i++)
   {
-    if (timer[i].callback == NULL) 
+    if (timer[i].callback == NULL)
     {
       return i;
     }
@@ -148,22 +148,23 @@ int Teensy_ISR_Timer::findFirstFreeSlot()
 }
 
 
-int Teensy_ISR_Timer::setupTimer(const unsigned long& d, void* f, void* p, bool h, const unsigned& n) 
+int Teensy_ISR_Timer::setupTimer(const unsigned long& d, void* f, void* p, bool h, const unsigned& n)
 {
   int freeTimer;
 
-  if (numTimers < 0) 
+  if (numTimers < 0)
   {
     init();
   }
 
   freeTimer = findFirstFreeSlot();
-  if (freeTimer < 0) 
+
+  if (freeTimer < 0)
   {
     return -1;
   }
 
-  if (f == NULL) 
+  if (f == NULL)
   {
     return -1;
   }
@@ -182,71 +183,71 @@ int Teensy_ISR_Timer::setupTimer(const unsigned long& d, void* f, void* p, bool 
 }
 
 
-int Teensy_ISR_Timer::setTimer(const unsigned long& d, timerCallback f, const unsigned& n) 
+int Teensy_ISR_Timer::setTimer(const unsigned long& d, timerCallback f, const unsigned& n)
 {
   return setupTimer(d, (void *)f, NULL, false, n);
 }
 
-int Teensy_ISR_Timer::setTimer(const unsigned long& d, timerCallback_p f, void* p, const unsigned& n) 
+int Teensy_ISR_Timer::setTimer(const unsigned long& d, timerCallback_p f, void* p, const unsigned& n)
 {
   return setupTimer(d, (void *)f, p, true, n);
 }
 
-int Teensy_ISR_Timer::setInterval(const unsigned long& d, timerCallback f) 
+int Teensy_ISR_Timer::setInterval(const unsigned long& d, timerCallback f)
 {
   return setupTimer(d, (void *)f, NULL, false, TIMER_RUN_FOREVER);
 }
 
-int Teensy_ISR_Timer::setInterval(const unsigned long& d, timerCallback_p f, void* p) 
+int Teensy_ISR_Timer::setInterval(const unsigned long& d, timerCallback_p f, void* p)
 {
   return setupTimer(d, (void *)f, p, true, TIMER_RUN_FOREVER);
 }
 
-int Teensy_ISR_Timer::setTimeout(const unsigned long& d, timerCallback f) 
+int Teensy_ISR_Timer::setTimeout(const unsigned long& d, timerCallback f)
 {
   return setupTimer(d, (void *)f, NULL, false, TIMER_RUN_ONCE);
 }
 
-int Teensy_ISR_Timer::setTimeout(const unsigned long& d, timerCallback_p f, void* p) 
+int Teensy_ISR_Timer::setTimeout(const unsigned long& d, timerCallback_p f, void* p)
 {
   return setupTimer(d, (void *)f, p, true, TIMER_RUN_ONCE);
 }
 
-bool Teensy_ISR_Timer::changeInterval(const unsigned& numTimer, const unsigned long& d) 
+bool Teensy_ISR_Timer::changeInterval(const unsigned& numTimer, const unsigned long& d)
 {
-  if (numTimer >= MAX_NUMBER_TIMERS) 
+  if (numTimer >= MAX_NUMBER_TIMERS)
   {
     return false;
   }
 
   // Updates interval of existing specified timer
-  if (timer[numTimer].callback != NULL) 
+  if (timer[numTimer].callback != NULL)
   {
     timer[numTimer].delay = d;
     timer[numTimer].prev_millis = millis();
 
     return true;
   }
-  
+
   // false return for non-used numTimer, no callback
   return false;
 }
 
-void Teensy_ISR_Timer::deleteTimer(const unsigned& timerId) 
+void Teensy_ISR_Timer::deleteTimer(const unsigned& timerId)
 {
-  if (timerId >= MAX_NUMBER_TIMERS) 
+  if (timerId >= MAX_NUMBER_TIMERS)
   {
     return;
   }
 
   // nothing to delete if no timers are in use
-  if (numTimers == 0) 
+  if (numTimers == 0)
   {
     return;
   }
 
   // don't decrease the number of timers if the specified slot is already empty
-  if (timer[timerId].callback != NULL) 
+  if (timer[timerId].callback != NULL)
   {
     memset((void*) &timer[timerId], 0, sizeof (timer_t));
     timer[timerId].prev_millis = millis();
@@ -257,9 +258,9 @@ void Teensy_ISR_Timer::deleteTimer(const unsigned& timerId)
 }
 
 // function contributed by code@rowansimms.com
-void Teensy_ISR_Timer::restartTimer(const unsigned& numTimer) 
+void Teensy_ISR_Timer::restartTimer(const unsigned& numTimer)
 {
-  if (numTimer >= MAX_NUMBER_TIMERS) 
+  if (numTimer >= MAX_NUMBER_TIMERS)
   {
     return;
   }
@@ -268,9 +269,9 @@ void Teensy_ISR_Timer::restartTimer(const unsigned& numTimer)
 }
 
 
-bool Teensy_ISR_Timer::isEnabled(const unsigned& numTimer) 
+bool Teensy_ISR_Timer::isEnabled(const unsigned& numTimer)
 {
-  if (numTimer >= MAX_NUMBER_TIMERS) 
+  if (numTimer >= MAX_NUMBER_TIMERS)
   {
     return false;
   }
@@ -279,9 +280,9 @@ bool Teensy_ISR_Timer::isEnabled(const unsigned& numTimer)
 }
 
 
-void Teensy_ISR_Timer::enable(const unsigned& numTimer) 
+void Teensy_ISR_Timer::enable(const unsigned& numTimer)
 {
-  if (numTimer >= MAX_NUMBER_TIMERS) 
+  if (numTimer >= MAX_NUMBER_TIMERS)
   {
     return;
   }
@@ -290,9 +291,9 @@ void Teensy_ISR_Timer::enable(const unsigned& numTimer)
 }
 
 
-void Teensy_ISR_Timer::disable(const unsigned& numTimer) 
+void Teensy_ISR_Timer::disable(const unsigned& numTimer)
 {
-  if (numTimer >= MAX_NUMBER_TIMERS) 
+  if (numTimer >= MAX_NUMBER_TIMERS)
   {
     return;
   }
@@ -300,35 +301,35 @@ void Teensy_ISR_Timer::disable(const unsigned& numTimer)
   timer[numTimer].enabled = false;
 }
 
-void Teensy_ISR_Timer::enableAll() 
+void Teensy_ISR_Timer::enableAll()
 {
   // Enable all timers with a callback assigned (used)
 
-  for (uint8_t i = 0; i < MAX_NUMBER_TIMERS; i++) 
+  for (uint8_t i = 0; i < MAX_NUMBER_TIMERS; i++)
   {
-    if (timer[i].callback != NULL && timer[i].numRuns == TIMER_RUN_FOREVER) 
+    if (timer[i].callback != NULL && timer[i].numRuns == TIMER_RUN_FOREVER)
     {
       timer[i].enabled = true;
     }
   }
 }
 
-void Teensy_ISR_Timer::disableAll() 
+void Teensy_ISR_Timer::disableAll()
 {
   // Disable all timers with a callback assigned (used)
 
-  for (uint8_t i = 0; i < MAX_NUMBER_TIMERS; i++) 
+  for (uint8_t i = 0; i < MAX_NUMBER_TIMERS; i++)
   {
-    if (timer[i].callback != NULL && timer[i].numRuns == TIMER_RUN_FOREVER) 
+    if (timer[i].callback != NULL && timer[i].numRuns == TIMER_RUN_FOREVER)
     {
       timer[i].enabled = false;
     }
   }
 }
 
-void Teensy_ISR_Timer::toggle(const unsigned& numTimer) 
+void Teensy_ISR_Timer::toggle(const unsigned& numTimer)
 {
-  if (numTimer >= MAX_NUMBER_TIMERS) 
+  if (numTimer >= MAX_NUMBER_TIMERS)
   {
     return;
   }
@@ -337,7 +338,7 @@ void Teensy_ISR_Timer::toggle(const unsigned& numTimer)
 }
 
 
-unsigned Teensy_ISR_Timer::getNumTimers() 
+unsigned Teensy_ISR_Timer::getNumTimers()
 {
   return numTimers;
 }

@@ -6,7 +6,11 @@
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](#Contributing)
 [![GitHub issues](https://img.shields.io/github/issues/khoih-prog/Teensy_TimerInterrupt.svg)](http://github.com/khoih-prog/Teensy_TimerInterrupt/issues)
 
-<a href="https://www.buymeacoffee.com/khoihprog6" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 50px !important;width: 181px !important;" ></a>
+
+<a href="https://www.buymeacoffee.com/khoihprog6" title="Donate to my libraries using BuyMeACoffee"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Donate to my libraries using BuyMeACoffee" style="height: 50px !important;width: 181px !important;" ></a>
+<a href="https://www.buymeacoffee.com/khoihprog6" title="Donate to my libraries using BuyMeACoffee"><img src="https://img.shields.io/badge/buy%20me%20a%20coffee-donate-orange.svg?logo=buy-me-a-coffee&logoColor=FFDD00" style="height: 20px !important;width: 200px !important;" ></a>
+<a href="https://profile-counter.glitch.me/khoih-prog/count.svg" title="Total khoih-prog Visitor count"><img src="https://profile-counter.glitch.me/khoih-prog/count.svg" style="height: 30px;width: 200px;"></a>
+<a href="https://profile-counter.glitch.me/khoih-prog-Teensy_TimerInterrupt/count.svg" title="Teensy_TimerInterrupt Visitor count"><img src="https://profile-counter.glitch.me/khoih-prog-Teensy_TimerInterrupt/count.svg" style="height: 30px;width: 200px;"></a>
 
 ---
 ---
@@ -106,11 +110,11 @@ Being ISR-based timers, their executions are not blocked by bad-behaving functio
 This non-being-blocked important feature is absolutely necessary for mission-critical tasks.
 
 You'll see blynkTimer Software is blocked while system is connecting to WiFi / Internet / Blynk, as well as by blocking task 
-in loop(), using delay() function as an example. The elapsed time then is very unaccurate
+in `loop()`, using delay() function as an example. The elapsed time then is very unaccurate
 
 ### Why using ISR-based Hardware Timer Interrupt is better
 
-Imagine you have a system with a **mission-critical** function, measuring water level and control the sump pump or doing something much more important. You normally use a software timer to poll, or even place the function in loop(). But what if another function is **blocking** the loop() or setup().
+Imagine you have a system with a **mission-critical** function, measuring water level and control the sump pump or doing something much more important. You normally use a software timer to poll, or even place the function in `loop()`. But what if another function is **blocking** the `loop()` or `setup()`.
 
 So your function **might not be executed, and the result would be disastrous.**
 
@@ -118,9 +122,9 @@ You'd prefer to have your function called, no matter what happening with other f
 
 The correct choice is to use a Hardware Timer with **Interrupt** to call your function.
 
-These hardware timers, using interrupt, still work even if other functions are blocking. Moreover, they are much more **precise** (certainly depending on clock frequency accuracy) than other software timers using millis() or micros(). That's necessary if you need to measure some data requiring better accuracy.
+These hardware timers, using interrupt, still work even if other functions are blocking. Moreover, they are much more **precise** (certainly depending on clock frequency accuracy) than other software timers using `millis()` or `micros()`. That's necessary if you need to measure some data requiring better accuracy.
 
-Functions using normal software timers, relying on loop() and calling millis(), won't work if the loop() or setup() is blocked by certain operation. For example, certain function is blocking while it's connecting to WiFi or some services.
+Functions using normal software timers, relying on `loop()` and calling `millis()`, won't work if the `loop()` or `setup()` is blocked by certain operation. For example, certain function is blocking while it's connecting to WiFi or some services.
 
 The catch is **your function is now part of an ISR (Interrupt Service Routine), and must be lean / mean, and follow certain rules.** More to read on:
 
@@ -141,7 +145,7 @@ The catch is **your function is now part of an ISR (Interrupt Service Routine), 
 
 ### Important Notes about ISR
 
-1. Inside the attached function, **delay() won’t work and the value returned by millis() will not increment.** Serial data received while in the function may be lost. You should declare as **volatile any variables that you modify within the attached function.**
+1. Inside the attached function, **delay() won’t work and the value returned by `millis()` will not increment.** Serial data received while in the function may be lost. You should declare as **volatile any variables that you modify within the attached function.**
 
 2. Typically global variables are used to pass data between an ISR and the main program. To make sure variables shared between an ISR and the main program are updated correctly, declare them as volatile.
 
@@ -152,7 +156,7 @@ The catch is **your function is now part of an ISR (Interrupt Service Routine), 
 ## Prerequisites
 
  1. [`Arduino IDE 1.8.19+` for Arduino](https://github.com/arduino/Arduino). [![GitHub release](https://img.shields.io/github/release/arduino/Arduino.svg)](https://github.com/arduino/Arduino/releases/latest)
- 2. [`Teensy Core 1.56+`](https://www.pjrc.com/teensy/td_download.html) for Teensy.
+ 2. [`Teensy Core 1.57+`](https://www.pjrc.com/teensy/td_download.html) for Teensy.
  3. To use with certain example, 
    - [`SimpleTimer library`](https://github.com/jfturcot/SimpleTimer) for [ISR_16_Timers_Array example](examples/ISR_16_Timers_Array).
 
@@ -179,7 +183,7 @@ Another way to install is to:
 
 1. Install [VS Code](https://code.visualstudio.com/)
 2. Install [PlatformIO](https://platformio.org/platformio-ide)
-3. Install [**Teensy_TimerInterrupt** library](https://platformio.org/lib/show/11426/Teensy_TimerInterrupt) or [**Teensy_TimerInterrupt** library](https://platformio.org/lib/show/11404/Teensy_TimerInterrupt) by using [Library Manager](https://platformio.org/lib/show/11426/Teensy_TimerInterrupt/installation). Search for **Teensy_TimerInterrupt** in [Platform.io Author's Libraries](https://platformio.org/lib/search?query=author:%22Khoi%20Hoang%22)
+3. Install [**Teensy_TimerInterrupt** library](https://registry.platformio.org/libraries/khoih-prog/Teensy_TimerInterrupt) by using [Library Manager](https://registry.platformio.org/libraries/khoih-prog/Teensy_TimerInterrupt/installation). Search for **Teensy_TimerInterrupt** in [Platform.io Author's Libraries](https://platformio.org/lib/search?query=author:%22Khoi%20Hoang%22)
 4. Use included [platformio.ini](platformio/platformio.ini) file from examples to ensure that all dependent libraries will installed automatically. Please visit documentation for the other options and examples at [Project Configuration File](https://docs.platformio.org/page/projectconf.html)
 
 ---
@@ -283,7 +287,7 @@ The current library implementation, using `xyz-Impl.h` instead of standard `xyz.
 
 You can include `.hpp`
 
-```
+```cpp
 // Can be included as many times as necessary, without `Multiple Definitions` Linker Error
 #include "TeensyTimerInterrupt.hpp"     //https://github.com/khoih-prog/Teensy_TimerInterrupt
 
@@ -293,7 +297,7 @@ You can include `.hpp`
 
 in many files. But be sure to use the following `.h` files **in just 1 `.h`, `.cpp` or `.ino` file**, which must **not be included in any other file**, to avoid `Multiple Definitions` Linker Error
 
-```
+```cpp
 // To be included only in main(), .ino with setup() to avoid `Multiple Definitions` Linker Error
 #include "TeensyTimerInterrupt.h"       //https://github.com/khoih-prog/Teensy_TimerInterrupt
 
@@ -322,7 +326,7 @@ The `ISR_Timer_Complex` example will demonstrate the nearly perfect accuracy com
 Being ISR-based timers, their executions are not blocked by bad-behaving functions / tasks, such as connecting to WiFi, Internet and Blynk services. You can also have many `(up to 16)` timers to use.
 This non-being-blocked important feature is absolutely necessary for mission-critical tasks. 
 You'll see blynkTimer Software is blocked while system is connecting to WiFi / Internet / Blynk, as well as by blocking task 
-in loop(), using delay() function as an example. The elapsed time then is very unaccurate
+in `loop()`, using delay() function as an example. The elapsed time then is very unaccurate
 
 ---
 ---
@@ -335,7 +339,7 @@ Before using any Timer, you have to make sure the Timer has not been used by any
 
 ### 1.1 Init Hardware Timer
 
-```
+```cpp
 // You can select Teensy Hardware Timer  from TEENSY_TIMER_1 or TEENSY_TIMER_3
 
 // Init Teensy timer TEENSY_TIMER_1
@@ -346,7 +350,7 @@ TeensyTimer ITimer0(TEENSY_TIMER_1);
 
 Use one of these functions with **interval in unsigned long milliseconds**
 
-```
+```cpp
 // Interval (in microseconds)
 // For Teensy 4.0/4.1, F_BUS_ACTUAL = 150 MHz => max interval/period is only 55922 us (~17.9 Hz)
 bool setInterval(unsigned long interval, timerCallback callback);
@@ -358,7 +362,7 @@ bool attachInterruptInterval(unsigned long interval, timerCallback callback);
 
 as follows
 
-```
+```cpp
 void TimerHandler0(void)
 {
   // Doing something here inside ISR
@@ -385,7 +389,7 @@ void setup()
 
 Use one of these functions with **frequency in float Hz**
 
-```
+```cpp
 // frequency (in hertz) and duration (in milliseconds). Duration = 0 or not specified => run indefinitely
 // No params and duration now. To be added in the future by adding similar functions here or to NRF52-hal-timer.c
 bool setFrequency(float frequency, timerCallback callback);
@@ -396,7 +400,7 @@ bool attachInterrupt(float frequency, timerCallback callback);
 
 as follows
 
-```
+```cpp
 void TimerHandler0(void)
 {
   // Doing something here inside ISR
@@ -427,7 +431,7 @@ The 16 ISR_based Timers, designed for long timer intervals, only support using *
 
 ### 2.2 Init Hardware Timer and ISR-based Timer
 
-```
+```cpp
 // You can select Teensy Hardware Timer  from TEENSY_TIMER_1 or TEENSY_TIMER_3
 
 // Init Teensy timer TEENSY_TIMER_1
@@ -440,7 +444,7 @@ Teensy_ISR_Timer ISR_Timer;
 
 ### 2.3 Set Hardware Timer Interval and attach Timer Interrupt Handler functions
 
-```
+```cpp
 void TimerHandler(void)
 {
   ISR_Timer.run();
@@ -520,336 +524,10 @@ void setup()
 
 ### Example [ISR_16_Timers_Array_Complex](examples/ISR_16_Timers_Array_Complex)
 
-```
-#if !( defined(CORE_TEENSY) || defined(TEENSYDUINO) )
-  #error This code is designed to run on Teensy platform! Please check your Tools->Board setting.
-#endif
 
-// These define's must be placed at the beginning before #include "TeensyTimerInterrupt.h"
-// _TIMERINTERRUPT_LOGLEVEL_ from 0 to 4
-// Don't define _TIMERINTERRUPT_LOGLEVEL_ > 0. Only for special ISR debugging only. Can hang the system.
-// Don't define TIMER_INTERRUPT_DEBUG > 2. Only for special ISR debugging only. Can hang the system.
-#define TIMER_INTERRUPT_DEBUG         0
-#define _TIMERINTERRUPT_LOGLEVEL_     3
+https://github.com/khoih-prog/Teensy_TimerInterrupt/blob/9848aab989ed60e3f4c9eb6755aa653c64150170/examples/ISR_16_Timers_Array_Complex/ISR_16_Timers_Array_Complex.ino#L35-L362
 
-// To be included only in main(), .ino with setup() to avoid `Multiple Definitions` Linker Error
-#include "TeensyTimerInterrupt.h"
 
-// To be included only in main(), .ino with setup() to avoid `Multiple Definitions` Linker Error
-#include "Teensy_ISR_Timer.h"
-
-#include <SimpleTimer.h>              // https://github.com/jfturcot/SimpleTimer
-
-#ifndef LED_BUILTIN
-  #define LED_BUILTIN       13
-#endif
-
-#ifndef LED_BLUE
-  #define LED_BLUE          2
-#endif
-
-#ifndef LED_RED
-  #define LED_RED           3
-#endif
-
-#define HW_TIMER_INTERVAL_US      10000L
-
-volatile uint32_t startMillis = 0;
-
-// You can select Teensy Hardware Timer  from TEENSY_TIMER_1 or TEENSY_TIMER_3
-
-// Init Teensy timer TEENSY_TIMER_1
-TeensyTimer ITimer(TEENSY_TIMER_1);
-
-// Init Teensy_ISR_Timer
-// Each Teensy_ISR_Timer can service 16 different ISR-based timers
-Teensy_ISR_Timer ISR_Timer;
-
-#define LED_TOGGLE_INTERVAL_MS        2000L
-
-void TimerHandler()
-{
-  static bool toggle  = false;
-  static int timeRun  = 0;
-
-  ISR_Timer.run();
-
-  // Toggle LED every LED_TOGGLE_INTERVAL_MS = 2000ms = 2s
-  if (++timeRun == ((LED_TOGGLE_INTERVAL_MS * 1000) / HW_TIMER_INTERVAL_US) )
-  {
-    timeRun = 0;
-
-    //timer interrupt toggles pin LED_BUILTIN
-    digitalWrite(LED_BUILTIN, toggle);
-    toggle = !toggle;
-  }
-}
-
-/////////////////////////////////////////////////
-
-#define NUMBER_ISR_TIMERS         16
-
-typedef void (*irqCallback)  ();
-
-/////////////////////////////////////////////////
-
-#define USE_COMPLEX_STRUCT      true
-
-#if USE_COMPLEX_STRUCT
-
-  typedef struct 
-  {
-    irqCallback   irqCallbackFunc;
-    uint32_t      TimerInterval;
-    unsigned long deltaMillis;
-    unsigned long previousMillis;
-  } ISRTimerData;
-  
-  // In NRF52, avoid doing something fancy in ISR, for example Serial.print()
-  // The pure simple Serial.prints here are just for demonstration and testing. Must be eliminate in working environment
-  // Or you can get this run-time error / crash
-  
-  void doingSomething(int index);
-
-#else
-
-  volatile unsigned long deltaMillis    [NUMBER_ISR_TIMERS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-  volatile unsigned long previousMillis [NUMBER_ISR_TIMERS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-  
-  // You can assign any interval for any timer here, in milliseconds
-  uint32_t TimerInterval[NUMBER_ISR_TIMERS] =
-  {
-    5000L,  10000L,  15000L,  20000L,  25000L,  30000L,  35000L,  40000L,
-    45000L, 50000L,  55000L,  60000L,  65000L,  70000L,  75000L,  80000L
-  };
-  
-  void doingSomething(int index)
-  {
-    unsigned long currentMillis  = millis();
-    
-    deltaMillis[index]    = currentMillis - previousMillis[index];
-    previousMillis[index] = currentMillis;
-  }
-
-#endif
-
-////////////////////////////////////
-// Shared
-////////////////////////////////////
-
-void doingSomething0()
-{
-  doingSomething(0);
-}
-
-void doingSomething1()
-{
-  doingSomething(1);
-}
-
-void doingSomething2()
-{
-  doingSomething(2);
-}
-
-void doingSomething3()
-{
-  doingSomething(3);
-}
-
-void doingSomething4()
-{
-  doingSomething(4);
-}
-
-void doingSomething5()
-{
-  doingSomething(5);
-}
-
-void doingSomething6()
-{
-  doingSomething(6);
-}
-
-void doingSomething7()
-{
-  doingSomething(7);
-}
-
-void doingSomething8()
-{
-  doingSomething(8);
-}
-
-void doingSomething9()
-{
-  doingSomething(9);
-}
-
-void doingSomething10()
-{
-  doingSomething(10);
-}
-
-void doingSomething11()
-{
-  doingSomething(11);
-}
-
-void doingSomething12()
-{
-  doingSomething(12);
-}
-
-void doingSomething13()
-{
-  doingSomething(13);
-}
-
-void doingSomething14()
-{
-  doingSomething(14);
-}
-
-void doingSomething15()
-{
-  doingSomething(15);
-}
-
-#if USE_COMPLEX_STRUCT
-
-  ISRTimerData curISRTimerData[NUMBER_ISR_TIMERS] =
-  {
-    //irqCallbackFunc, TimerInterval, deltaMillis, previousMillis
-    { doingSomething0,    5000L, 0, 0 },
-    { doingSomething1,   10000L, 0, 0 },
-    { doingSomething2,   15000L, 0, 0 },
-    { doingSomething3,   20000L, 0, 0 },
-    { doingSomething4,   25000L, 0, 0 },
-    { doingSomething5,   30000L, 0, 0 },
-    { doingSomething6,   35000L, 0, 0 },
-    { doingSomething7,   40000L, 0, 0 },
-    { doingSomething8,   45000L, 0, 0 },
-    { doingSomething9,   50000L, 0, 0 },
-    { doingSomething10,  55000L, 0, 0 },
-    { doingSomething11,  60000L, 0, 0 },
-    { doingSomething12,  65000L, 0, 0 },
-    { doingSomething13,  70000L, 0, 0 },
-    { doingSomething14,  75000L, 0, 0 },
-    { doingSomething15,  80000L, 0, 0 }
-  };
-  
-  void doingSomething(int index)
-  {
-    unsigned long currentMillis  = millis();
-    
-    curISRTimerData[index].deltaMillis    = currentMillis - curISRTimerData[index].previousMillis;
-    curISRTimerData[index].previousMillis = currentMillis;
-  }
-
-#else
-
-  irqCallback irqCallbackFunc[NUMBER_ISR_TIMERS] =
-  {
-    doingSomething0,  doingSomething1,  doingSomething2,  doingSomething3,
-    doingSomething4,  doingSomething5,  doingSomething6,  doingSomething7,
-    doingSomething8,  doingSomething9,  doingSomething10, doingSomething11,
-    doingSomething12, doingSomething13, doingSomething14, doingSomething15
-  };
-
-#endif
-///////////////////////////////////////////
-
-#define SIMPLE_TIMER_MS        2000L
-
-// Init SimpleTimer
-SimpleTimer simpleTimer;
-
-// Here is software Timer, you can do somewhat fancy stuffs without many issues.
-// But always avoid
-// 1. Long delay() it just doing nothing and pain-without-gain wasting CPU power.Plan and design your code / strategy ahead
-// 2. Very long "do", "while", "for" loops without predetermined exit time.
-void simpleTimerDoingSomething2s()
-{
-  static unsigned long previousMillis = startMillis;
-
-  unsigned long currMillis = millis();
-
-  Serial.print(F("SimpleTimer : "));Serial.print(SIMPLE_TIMER_MS / 1000);
-  Serial.print(F(", ms : ")); Serial.print(currMillis);
-  Serial.print(F(", Dms : ")); Serial.println(currMillis - previousMillis);
-
-  for (uint16_t i = 0; i < NUMBER_ISR_TIMERS; i++)
-  {
-#if USE_COMPLEX_STRUCT    
-    Serial.print(F("Timer : ")); Serial.print(i);
-    Serial.print(F(", programmed : ")); Serial.print(curISRTimerData[i].TimerInterval);
-    Serial.print(F(", actual : ")); Serial.println(curISRTimerData[i].deltaMillis);
-#else
-    Serial.print(F("Timer : ")); Serial.print(i);
-    Serial.print(F(", programmed : ")); Serial.print(TimerInterval[i]);
-    Serial.print(F(", actual : ")); Serial.println(deltaMillis[i]);
-#endif    
-  }
-
-  previousMillis = currMillis;
-}
-
-void setup()
-{
-  pinMode(LED_BUILTIN, OUTPUT);
-
-  Serial.begin(115200);
-  while (!Serial);
-
-  delay(100);
-  
-  Serial.print(F("\nStarting ISR_16_Timers_Array_Complex on ")); Serial.println(BOARD_NAME);
-  Serial.println(TEENSY_TIMER_INTERRUPT_VERSION);
-  Serial.print(F("CPU Frequency = ")); Serial.print(F_CPU / 1000000); Serial.println(F(" MHz"));
-
-  // Interval in microsecs
-  if (ITimer.attachInterruptInterval(HW_TIMER_INTERVAL_US, TimerHandler))
-  {
-    startMillis = millis();
-    Serial.print(F("Starting ITimer0 OK, millis() = ")); Serial.println(startMillis);
-  }
-  else
-    Serial.println(F("Can't set ITimer0. Select another freq. or timer"));
-
-  // Just to demonstrate, don't use too many ISR Timers if not absolutely necessary
-  // You can use up to 16 timer for each Teensy_ISR_Timer
-  for (uint16_t i = 0; i < NUMBER_ISR_TIMERS; i++)
-  {
-#if USE_COMPLEX_STRUCT
-    curISRTimerData[i].previousMillis = startMillis;
-    ISR_Timer.setInterval(curISRTimerData[i].TimerInterval, curISRTimerData[i].irqCallbackFunc);
-#else
-    previousMillis[i] = startMillis;
-    ISR_Timer.setInterval(TimerInterval[i], irqCallbackFunc[i]);
-#endif    
-  }
-
-  // You need this timer for non-critical tasks. Avoid abusing ISR if not absolutely necessary.
-  simpleTimer.setInterval(SIMPLE_TIMER_MS, simpleTimerDoingSomething2s);
-}
-
-#define BLOCKING_TIME_MS      10000L
-
-void loop()
-{
-  // This unadvised blocking task is used to demonstrate the blocking effects onto the execution and accuracy to Software timer
-  // You see the time elapse of ISR_Timer still accurate, whereas very unaccurate for Software Timer
-  // The time elapse for 2000ms software timer now becomes 3000ms (BLOCKING_TIME_MS)
-  // While that of ISR_Timer is still prefect.
-  delay(BLOCKING_TIME_MS);
-
-  // You need this Software timer for non-critical tasks. Avoid abusing ISR if not absolutely necessary
-  // You don't need to and never call ISR_Timer.run() here in the loop(). It's already handled by ISR timer.
-  simpleTimer.run();
-}
-```
 ---
 ---
 
@@ -859,7 +537,7 @@ void loop()
 
 The following is the sample terminal output when running example [ISR_16_Timers_Array](examples/ISR_16_Timers_Array) on **Teensy 4.1** to demonstrate the accuracy of ISR Hardware Timer, **especially when system is very busy or blocked**. The 16 independent ISR timers are **programmed to be activated repetitively after certain intervals, is activated exactly after that programmed interval !!!**
 
-While software timer, **programmed for 2s, is activated after 10.000s in loop()!!!**.
+While software timer, **programmed for 2s, is activated after 10.000s in `loop()`!!!**.
 
 In this example, 16 independent ISR Timers are used and utilized just one Hardware Timer. The Timer Intervals and Function Pointers are stored in arrays to facilitate the code modification.
 
@@ -1062,7 +740,7 @@ Changing Interval, Timer = 20
 
 The following is the sample terminal output when running new example [ISR_16_Timers_Array_Complex](examples/ISR_16_Timers_Array_Complex) on **Teensy 4.1** to demonstrate the accuracy of ISR Hardware Timer, **especially when system is very busy or blocked**. The 16 independent ISR timers are **programmed to be activated repetitively after certain intervals, is activated exactly after that programmed interval !!!**
 
-While software timer, **programmed for 2s, is activated after 10.000s in loop()!!!**.
+While software timer, **programmed for 2s, is activated after 10.000s in `loop()`!!!**.
 
 In this example, 16 independent ISR Timers are used, yet utilized just one Hardware Timer. The Timer Intervals and Function Pointers are stored in arrays to facilitate the code modification.
 
